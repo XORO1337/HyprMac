@@ -50,19 +50,15 @@ install_theme_deps() {
     print_status "Installing theme dependencies..."
     
     sudo pacman -S --needed --noconfirm \
-        gtk-engine-murrine \
-        gtk-engines \
         sassc \
         optipng \
         inkscape \
         imagemagick \
         librsvg \
         lxappearance \
-        gtk-theme-config \
         qt5ct \
         qt6ct \
-        kvantum-qt5 \
-        kvantum-qt6 \
+        kvantum \
         papirus-icon-theme
     
     print_success "Theme dependencies installed"
@@ -168,18 +164,18 @@ install_sf_fonts() {
 install_additional_fonts() {
     print_status "Installing additional fonts..."
     
-    # Install nerd fonts and other useful fonts
-    yay -S --needed --noconfirm \
-        nerd-fonts-complete \
-        ttf-meslo-nerd-font-powerlevel10k \
+    # Install nerd fonts and other useful fonts (selective)
+    print_status "Installing selected fonts from AUR..."
+    yay -S --needed --noconfirm ttf-meslo-nerd 2>/dev/null || print_warning "Meslo Nerd font skipped"
+    yay -S --needed --noconfirm ttf-jetbrains-mono-nerd 2>/dev/null || print_warning "JetBrains Nerd font skipped"
+    
+    # Install standard fonts from official repos
+    sudo pacman -S --needed --noconfirm \
         ttf-fira-code \
         ttf-jetbrains-mono \
         ttf-cascadia-code \
         ttf-hack \
-        ttf-iosevka-nerd \
-        noto-fonts-emoji \
-        ttf-twemoji \
-        ttf-emojione-color
+        noto-fonts-emoji
     
     # Update font cache
     fc-cache -fv

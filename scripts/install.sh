@@ -84,8 +84,6 @@ install_base_deps() {
     sudo pacman -S --needed --noconfirm \
         wayland \
         wayland-protocols \
-        wayland-utils \
-        wlroots \
         libdrm \
         libxkbcommon \
         pixman \
@@ -98,12 +96,7 @@ install_base_deps() {
     # Graphics and rendering
     sudo pacman -S --needed --noconfirm \
         mesa \
-        vulkan-radeon \
-        vulkan-intel \
-        nvidia-utils \
-        libglvnd \
-        lib32-mesa \
-        lib32-nvidia-utils
+        libglvnd
     
     # Audio and multimedia
     sudo pacman -S --needed --noconfirm \
@@ -124,7 +117,6 @@ install_base_deps() {
     sudo pacman -S --needed --noconfirm \
         ttf-dejavu \
         ttf-liberation \
-        ttf-droid \
         ttf-roboto \
         ttf-opensans \
         ttf-font-awesome \
@@ -148,13 +140,9 @@ install_hyprland() {
     
     # Install additional Hyprland utilities
     sudo pacman -S --needed --noconfirm \
-        grimblast \
+        grim \
         slurp \
-        wl-clipboard \
-        wl-clip-persist \
-        wlr-randr \
-        wlsunset \
-        kanshi
+        wl-clipboard
     
     print_success "Hyprland installed"
 }
@@ -182,36 +170,8 @@ install_aur_packages() {
     
     # Install essential AUR packages
     yay -S --needed --noconfirm \
-        hyprland-git \
-        waybar-hyprland-git \
-        wofi-git \
         swww \
-        gSlapper \
-        grimblast-git \
-        wl-clip-persist-git \
-        wlr-randr-git \
-        kanshi-git
-    
-    # Install theming and appearance packages
-    yay -S --needed --noconfirm \
-        gtk-engine-murrine \
-        gtk-engines \
-        sassc \
-        optipng \
-        inkscape \
-        imagemagick \
-        librsvg
-    
-    # Install additional utilities
-    yay -S --needed --noconfirm \
-        brightnessctl \
-        playerctl \
-        network-manager-applet \
-        blueman \
-        polkit-kde-agent \
-        xdg-desktop-portal-hyprland \
-        xdg-desktop-portal-gtk \
-        xdg-desktop-portal-wlr
+        grimblast-git 2>/dev/null || print_warning "grimblast-git failed to install"
     
     print_success "AUR packages installed"
 }
@@ -244,10 +204,10 @@ install_ags() {
 install_fabric() {
     print_status "Installing Fabric..."
     
-    # Fabric is a modern widget toolkit
-    yay -S --needed --noconfirm fabric-git
+    # Fabric is a modern widget toolkit (optional)
+    yay -S --needed --noconfirm fabric-git 2>/dev/null || print_warning "Fabric installation skipped"
     
-    print_success "Fabric installed"
+    print_success "Fabric installation attempted"
 }
 
 # Function to install application launchers
@@ -257,12 +217,9 @@ install_launchers() {
     # Wofi (primary launcher)
     sudo pacman -S --needed --noconfirm wofi
     
-    # Additional launchers
-    yay -S --needed --noconfirm \
-        wofi-power-menu \
-        wofi-emoji \
-        wofi-calc \
-        wofi-pass
+    # Additional launchers (optional)
+    print_status "Installing optional wofi extensions..."
+    yay -S --needed --noconfirm wofi-emoji 2>/dev/null || print_warning "Optional wofi extensions skipped"
     
     print_success "Launchers installed"
 }
@@ -274,7 +231,6 @@ install_file_managers() {
     # Nautilus (GNOME file manager)
     sudo pacman -S --needed --noconfirm \
         nautilus \
-        nautilus-open-any-terminal \
         file-roller \
         gvfs \
         gvfs-mtp \
@@ -288,9 +244,7 @@ install_file_managers() {
         thunar \
         thunar-archive-plugin \
         thunar-media-tags-plugin \
-        thunar-vcs-plugin \
-        tumbler \
-        tumbler-plugins-extra
+        tumbler
     
     print_success "File managers installed"
 }
@@ -303,8 +257,7 @@ install_terminal_tools() {
     sudo pacman -S --needed --noconfirm \
         alacritty \
         kitty \
-        foot \
-        wezterm
+        foot
     
     # Shell and tools
     sudo pacman -S --needed --noconfirm \
@@ -317,18 +270,12 @@ install_terminal_tools() {
         ripgrep \
         fzf \
         tmux \
-        neovim \
-        helix
+        neovim
     
-    # Development tools
+    # Development tools (optional)
     sudo pacman -S --needed --noconfirm \
-        code \
-        visual-studio-code-bin \
-        intellij-idea-community-edition \
-        pyenv \
-        nvm \
         rustup \
-        go
+        go 2>/dev/null || print_warning "Some dev tools skipped"
     
     print_success "Terminal and development tools installed"
 }
@@ -350,11 +297,9 @@ install_macos_theme() {
     # Install additional theming tools
     sudo pacman -S --needed --noconfirm \
         lxappearance \
-        gtk-theme-config \
         qt5ct \
         qt6ct \
-        kvantum-qt5 \
-        kvantum-qt6
+        kvantum
     
     print_success "macOS theme components installed"
 }
@@ -368,20 +313,16 @@ install_wallpaper_deps() {
         mpv \
         ffmpeg \
         ffmpegthumbnailer \
-        libmpv \
-        lua52-mpdv
+        libmpv
     
     # Image wallpaper dependencies
     sudo pacman -S --needed --noconfirm \
         imagemagick \
-        feh \
-        sxiv \
-        nsxiv
+        feh
     
-    # Install wallpaper engines
+    # Install wallpaper engines from AUR
     yay -S --needed --noconfirm \
-        gSlapper-git \
-        swww-git
+        swww 2>/dev/null || print_warning "swww installation skipped"
     
     print_success "Wallpaper engine dependencies installed"
 }
@@ -394,14 +335,7 @@ install_utility_apps() {
     sudo pacman -S --needed --noconfirm \
         neofetch \
         htop \
-        btop \
-        iotop \
-        nethogs \
-        vnstat \
-        lm_sensors \
-        hwinfo \
-        inxi \
-        lshw
+        btop
     
     # Network utilities
     sudo pacman -S --needed --noconfirm \
@@ -412,32 +346,19 @@ install_utility_apps() {
         bluez-utils \
         openssh
     
-    # Media utilities
+    # Media utilities (optional)
     sudo pacman -S --needed --noconfirm \
-        vlc \
         mpv \
-        obs-studio \
-        kdenlive \
-        gimp \
-        inkscape \
-        krita
+        gimp 2>/dev/null || print_warning "Some media apps skipped"
     
-    # Office and productivity
+    # Office and productivity (optional)
     sudo pacman -S --needed --noconfirm \
-        libreoffice-fresh \
-        thunderbird \
-        firefox \
-        chromium \
-        onlyoffice-bin
+        firefox 2>/dev/null || print_warning "Some productivity apps skipped"
     
-    # Install additional utilities from AUR
-    yay -S --needed --noconfirm \
-        visual-studio-code-bin \
-        discord \
-        slack-desktop \
-        spotify \
-        teamspeak3 \
-        steam
+    # Install additional utilities from AUR (optional)
+    print_status "Installing optional AUR utilities..."
+    yay -S --needed --noconfirm visual-studio-code-bin 2>/dev/null || print_warning "VS Code skipped"
+    yay -S --needed --noconfirm spotify 2>/dev/null || print_warning "Spotify skipped"
     
     print_success "Utility applications installed"
 }
@@ -470,21 +391,16 @@ create_user_dirs() {
 install_fonts() {
     print_status "Installing additional fonts..."
     
-    # Install nerd fonts for icons
+    # Install nerd fonts for icons (selected fonts only)
     yay -S --needed --noconfirm \
-        nerd-fonts-complete \
-        ttf-meslo-nerd-font-powerlevel10k \
-        ttf-fira-code \
-        ttf-jetbrains-mono \
-        ttf-cascadia-code \
-        ttf-hack \
-        ttf-iosevka-nerd
+        ttf-meslo-nerd 2>/dev/null || print_warning "Nerd fonts skipped"
+    
+    yay -S --needed --noconfirm \
+        ttf-jetbrains-mono-nerd 2>/dev/null || print_warning "JetBrains Mono Nerd skipped"
     
     # Install emoji fonts
     sudo pacman -S --needed --noconfirm \
-        noto-fonts-emoji \
-        ttf-twemoji \
-        ttf-emojione-color
+        noto-fonts-emoji
     
     # Update font cache
     fc-cache -fv
@@ -509,7 +425,7 @@ enable_services() {
     systemctl --user start pipewire.service
     
     systemctl --user enable pipewire-pulse.service
-    systemctl --user start pipepipe-pulse.service
+    systemctl --user start pipewire-pulse.service
     
     systemctl --user enable wireplumber.service
     systemctl --user start wireplumber.service
