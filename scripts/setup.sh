@@ -18,6 +18,10 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 CONFIG_DIR="$HOME/.config"
 BACKUP_DIR="$HOME/.config_backup_$(date +%Y%m%d_%H%M%S)"
 
+# Arrays to track failed operations
+failed_configs=()
+failed_operations=()
+
 # Function to print colored output
 print_status() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -51,11 +55,21 @@ apply_config() {
     local target="$2"
     
     if [ -d "$source" ]; then
-        mkdir -p "$(dirname "$target")"
-        cp -r "$source" "$target"
+        if ! mkdir -p "$(dirname "$target")" 2>/dev/null; then
+            print_warning "Failed to create directory for: $target"
+            failed_configs+=("$(basename "$target")")
+            return 1
+        fi
+        if ! cp -r "$source" "$target" 2>/dev/null; then
+            print_warning "Failed to copy configuration: $target"
+            failed_configs+=("$(basename "$target")")
+            return 1
+        fi
         print_success "Applied configuration: $target"
     else
         print_warning "Source directory not found: $source"
+        failed_configs+=("$(basename "$source")")
+        return 1
     fi
 }
 
@@ -83,7 +97,10 @@ create_directories() {
     )
     
     for dir in "${dirs[@]}"; do
-        mkdir -p "$dir"
+        if ! mkdir -p "$dir" 2>/dev/null; then
+            print_warning "Failed to create directory: $dir"
+            failed_operations+=("Create directory: $(basename "$dir")")
+        fi
     done
     
     print_success "User directories created"
@@ -94,10 +111,10 @@ setup_hyprland() {
     print_status "Setting up Hyprland configuration..."
     
     backup_config "hypr"
-    apply_config "$PROJECT_ROOT/config/hyprland.conf" "$CONFIG_DIR/hypr/hyprland.conf"
+    apply_config "$PROJECT_ROOT/config/hyprland.conf" "$CONFIG_DIR/hypr/hyprland.conf" || failed_operations+=("Hyprland main config")
     
     # Create additional Hyprland configs
-    cat > "$CONFIG_DIR/hypr/hypridle.conf" << 'EOF'
+    if ! cat > "$CONFIG_DIR/hypr/hypridle.conf" 2>/dev/null << 'EOF'
 # Hypridle configuration for macOS Tahoe
 
 general {
@@ -110,6 +127,10 @@ general {
 
 timeout = 300, locker, hyprlock
 EOF
+    then
+        print_warning "Failed to create hypridle.conf"
+        failed_configs+=("hypridle.conf")
+    fi
     
     print_success "Hyprland configuration applied"
 }
@@ -119,8 +140,8 @@ setup_waybar() {
     print_status "Setting up Waybar configuration..."
     
     backup_config "waybar"
-    apply_config "$PROJECT_ROOT/config/waybar/config" "$CONFIG_DIR/waybar/config"
-    apply_config "$PROJECT_ROOT/config/waybar/style.css" "$CONFIG_DIR/waybar/style.css"
+    apply_config "$PROJECT_ROOT/config/waybar/config" "$CONFIG_DIR/waybar/config" || failed_operations+=("Waybar config")
+    apply_config "$PROJECT_ROOT/config/waybar/style.css" "$CONFIG_DIR/waybar/style.css" || failed_operations+=("Waybar style")
     
     print_success "Waybar configuration applied"
 }
@@ -130,10 +151,13 @@ setup_ags() {
     print_status "Setting up AGS configuration..."
     
     backup_config "ags"
-    apply_config "$PROJECT_ROOT/config/ags" "$CONFIG_DIR/ags"
+    apply_config "$PROJECT_ROOT/config/ags" "$CONFIG_DIR/ags" || failed_operations+=("AGS config")
     
     # Make AGS scripts executable
-    find "$CONFIG_DIR/ags" -name "*.js" -exec chmod +x {} \; 2>/dev/null || true
+    if ! find "$CONFIG_DIR/ags" -name "*.js" -exec chmod +x {} \; 2>/dev/null; then
+        print_warning "Failed to make some AGS scripts executable"
+        failed_operations+=("AGS executable permissions")
+    fi
     
     print_success "AGS configuration applied"
 }
@@ -143,25 +167,38 @@ setup_wallpaper() {
     print_status "Setting up wallpaper engine..."
     
     backup_config "wallpaper"
-    apply_config "$PROJECT_ROOT/wallpaper/config.json" "$CONFIG_DIR/wallpaper/config.json"
+    apply_config "$PROJECT_ROOT/wallpaper/config.json" "$CONFIG_DIR/wallpaper/config.json" || failed_operations+=("Wallpaper config")
     
     # Copy wallpaper picker script
-    cp "$PROJECT_ROOT/wallpaper/wallpaper-picker.py" "$HOME/.local/bin/wallpaper-picker"
-    chmod +x "$HOME/.local/bin/wallpaper-picker"
+    if ! cp "$PROJECT_ROOT/wallpaper/wallpaper-picker.py" "$HOME/.local/bin/wallpaper-picker" 2>/dev/null; then
+        print_warning "Failed to copy wallpaper-picker script"
+        failed_operations+=("Wallpaper picker script")
+    else
+        chmod +x "$HOME/.local/bin/wallpaper-picker" 2>/dev/null || {
+            print_warning "Failed to make wallpaper-picker executable"
+            failed_operations+=("Wallpaper picker permissions")
+        }
+    fi
     
     # Create default wallpaper directory structure
-    mkdir -p "$HOME/Documents/Wallpapers/Images"
-    mkdir -p "$HOME/Documents/Wallpapers/Videos"
+    mkdir -p "$HOME/Documents/Wallpapers/Images" 2>/dev/null || {
+        print_warning "Failed to create wallpaper directories"
+        failed_operations+=("Wallpaper directories")
+    }
+    mkdir -p "$HOME/Documents/Wallpapers/Videos" 2>/dev/null
     
     # Create default wallpaper (if not exists)
     if [ ! -f "$HOME/Documents/Wallpapers/macos-tahoe-default.jpg" ]; then
         # Create a simple gradient wallpaper
-        convert -size 1920x1080 gradient:'#667eea'-'#764ba2' \
-            "$HOME/Documents/Wallpapers/macos-tahoe-default.jpg" 2>/dev/null || {
+        if ! convert -size 1920x1080 gradient:'#667eea'-'#764ba2' \
+            "$HOME/Documents/Wallpapers/macos-tahoe-default.jpg" 2>/dev/null; then
             # Fallback: download a wallpaper
             curl -s "https://picsum.photos/1920/1080" \
-                -o "$HOME/Documents/Wallpapers/macos-tahoe-default.jpg" 2>/dev/null || true
-        }
+                -o "$HOME/Documents/Wallpapers/macos-tahoe-default.jpg" 2>/dev/null || {
+                print_warning "Failed to create default wallpaper"
+                failed_operations+=("Default wallpaper")
+            }
+        fi
     fi
     
     print_success "Wallpaper engine configured"
@@ -174,10 +211,14 @@ setup_wofi() {
     backup_config "wofi"
     
     # Create Wofi config directory
-    mkdir -p "$CONFIG_DIR/wofi"
+    if ! mkdir -p "$CONFIG_DIR/wofi" 2>/dev/null; then
+        print_warning "Failed to create Wofi config directory"
+        failed_operations+=("Wofi directory")
+        return 1
+    fi
     
     # Create Wofi config
-    cat > "$CONFIG_DIR/wofi/config" << 'EOF'
+    if ! cat > "$CONFIG_DIR/wofi/config" 2>/dev/null << 'EOF'
 # Wofi configuration for macOS Tahoe
 
 # General settings
@@ -204,9 +245,13 @@ selected = #007AFF
 # Fonts
 font = SF Pro Display 14
 EOF
+    then
+        print_warning "Failed to create Wofi config"
+        failed_configs+=("wofi/config")
+    fi
     
     # Create Wofi styles
-    cat > "$CONFIG_DIR/wofi/style.css" << 'EOF'
+    if ! cat > "$CONFIG_DIR/wofi/style.css" 2>/dev/null << 'EOF'
 /* Wofi macOS Style */
 
 * {
@@ -268,6 +313,10 @@ row:selected:hover {
     background: #007AFF;
 }
 EOF
+    then
+        print_warning "Failed to create Wofi style"
+        failed_configs+=("wofi/style.css")
+    fi
     
     print_success "Wofi configuration applied"
 }
@@ -279,7 +328,7 @@ setup_notifications() {
     backup_config "dunst"
     
     # Create Dunst config
-    cat > "$CONFIG_DIR/dunst/dunstrc" << 'EOF'
+    if ! cat > "$CONFIG_DIR/dunst/dunstrc" 2>/dev/null << 'EOF'
 # Dunst configuration for macOS Tahoe
 
 [global]
@@ -347,6 +396,10 @@ setup_notifications() {
     foreground = "#ffffff"
     timeout = 0
 EOF
+    then
+        print_warning "Failed to create Dunst config"
+        failed_configs+=("dunst/dunstrc")
+    fi
     
     print_success "Notification daemon configured"
 }
@@ -359,9 +412,13 @@ setup_terminal() {
     if command -v alacritty &> /dev/null; then
         backup_config "alacritty"
         
-        mkdir -p "$CONFIG_DIR/alacritty"
+        if ! mkdir -p "$CONFIG_DIR/alacritty" 2>/dev/null; then
+            print_warning "Failed to create Alacritty config directory"
+            failed_operations+=("Alacritty directory")
+            return 1
+        fi
         
-        cat > "$CONFIG_DIR/alacritty/alacritty.yml" << 'EOF'
+        if ! cat > "$CONFIG_DIR/alacritty/alacritty.yml" 2>/dev/null << 'EOF'
 # Alacritty configuration for macOS Tahoe
 
 import:
@@ -455,6 +512,10 @@ key_bindings:
   - { key: Home,     mods: Command,       action: ScrollToTop                }
   - { key: End,      mods: Command,       action: ScrollToBottom             }
 EOF
+        then
+            print_warning "Failed to create Alacritty config"
+            failed_configs+=("alacritty/alacritty.yml")
+        fi
     fi
     
     print_success "Terminal configuration applied"
@@ -465,7 +526,7 @@ create_desktop_entries() {
     print_status "Creating desktop entries..."
     
     # Wallpaper picker desktop entry
-    cat > "$HOME/.local/share/applications/wallpaper-picker.desktop" << 'EOF'
+    if ! cat > "$HOME/.local/share/applications/wallpaper-picker.desktop" 2>/dev/null << 'EOF'
 [Desktop Entry]
 Name=Wallpaper Picker
 Comment=Choose and manage desktop wallpapers
@@ -476,6 +537,10 @@ Type=Application
 Categories=System;Settings;
 Keywords=wallpaper;background;desktop;
 EOF
+    then
+        print_warning "Failed to create desktop entry"
+        failed_configs+=("wallpaper-picker.desktop")
+    fi
     
     print_success "Desktop entries created"
 }
@@ -486,10 +551,13 @@ setup_shell() {
     
     # Zsh configuration
     if [ -f "$HOME/.zshrc" ]; then
-        cp "$HOME/.zshrc" "${BACKUP_DIR}/zshrc_backup"
+        if ! cp "$HOME/.zshrc" "${BACKUP_DIR}/zshrc_backup" 2>/dev/null; then
+            print_warning "Failed to backup .zshrc"
+            failed_operations+=("Backup .zshrc")
+        fi
     fi
     
-    cat >> "$HOME/.zshrc" << 'EOF'
+    if ! cat >> "$HOME/.zshrc" 2>/dev/null << 'EOF'
 
 # macOS Tahoe Shell Configuration
 export GTK_THEME=macOS-Tahoe
@@ -523,6 +591,10 @@ system-preferences() {
 # macOS-style prompt
 PROMPT='%F{blue}%n%f at %F{green}%m%f in %F{yellow}%~%f $(git_prompt_info) $ '
 EOF
+    then
+        print_warning "Failed to update .zshrc"
+        failed_configs+=(".zshrc")
+    fi
     
     print_success "Shell configuration applied"
 }
@@ -531,10 +603,14 @@ EOF
 setup_autostart() {
     print_status "Setting up autostart applications..."
     
-    mkdir -p "$HOME/.config/autostart"
+    if ! mkdir -p "$HOME/.config/autostart" 2>/dev/null; then
+        print_warning "Failed to create autostart directory"
+        failed_operations+=("Autostart directory")
+        return 1
+    fi
     
     # Hyprland autostart
-    cat > "$HOME/.config/autostart/hyprland.desktop" << 'EOF'
+    if ! cat > "$HOME/.config/autostart/hyprland.desktop" 2>/dev/null << 'EOF'
 [Desktop Entry]
 Type=Application
 Name=Hyprland Services
@@ -543,9 +619,13 @@ Exec=/home/%u/.config/hypr/autostart.sh
 X-GNOME-Autostart-Phase=Initialization
 X-GNOME-Autostart-Notify=true
 EOF
+    then
+        print_warning "Failed to create autostart desktop entry"
+        failed_configs+=("hyprland.desktop")
+    fi
     
     # Create autostart script
-    cat > "$CONFIG_DIR/hypr/autostart.sh" << 'EOF'
+    if ! cat > "$CONFIG_DIR/hypr/autostart.sh" 2>/dev/null << 'EOF'
 #!/bin/bash
 
 # Hyprland autostart script for macOS Tahoe
@@ -582,8 +662,15 @@ hypridle &
 # Wait for all processes
 wait
 EOF
-    
-    chmod +x "$CONFIG_DIR/hypr/autostart.sh"
+    then
+        print_warning "Failed to create autostart script"
+        failed_configs+=("autostart.sh")
+    else
+        if ! chmod +x "$CONFIG_DIR/hypr/autostart.sh" 2>/dev/null; then
+            print_warning "Failed to make autostart script executable"
+            failed_operations+=("Autostart script permissions")
+        fi
+    fi
     
     print_success "Autostart applications configured"
 }
@@ -606,8 +693,15 @@ create_default_wallpapers() {
         
         if [ ! -f "$HOME/Documents/Wallpapers/$filename" ]; then
             if command -v convert &> /dev/null; then
-                convert -size 1920x1080 gradient:"$start_color":"$end_color" \
-                    "$HOME/Documents/Wallpapers/$filename" 2>/dev/null || true
+                if ! convert -size 1920x1080 gradient:"$start_color":"$end_color" \
+                    "$HOME/Documents/Wallpapers/$filename" 2>/dev/null; then
+                    print_warning "Failed to create wallpaper: $filename"
+                    failed_operations+=("Wallpaper: $filename")
+                fi
+            else
+                print_warning "ImageMagick not installed, skipping wallpaper generation"
+                failed_operations+=("Wallpaper generation")
+                break
             fi
         fi
     done
@@ -620,7 +714,7 @@ setup_shortcuts() {
     print_status "Setting up keyboard shortcuts..."
     
     # Create shortcuts file for display managers
-    cat > "$HOME/.local/share/applications/shortcuts.conf" << 'EOF'
+    if ! cat > "$HOME/.local/share/applications/shortcuts.conf" 2>/dev/null << 'EOF'
 # macOS Tahoe Keyboard Shortcuts
 
 # Window Management
@@ -666,14 +760,47 @@ XF86AudioPrev         Previous track
 XF86MonBrightnessUp   Increase brightness
 XF86MonBrightnessDown Decrease brightness
 EOF
+    then
+        print_warning "Failed to create shortcuts file"
+        failed_configs+=("shortcuts.conf")
+    fi
     
     print_success "Keyboard shortcuts configured"
 }
 
 # Function to print completion message
 print_completion() {
-    print_success "Setup completed successfully!"
     echo
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+    
+    # Display summary
+    if [ ${#failed_configs[@]} -eq 0 ] && [ ${#failed_operations[@]} -eq 0 ]; then
+        print_success "✓✓✓ Setup completed successfully! ✓✓✓"
+    else
+        print_warning "Setup completed with some issues:"
+        echo
+        
+        if [ ${#failed_operations[@]} -gt 0 ]; then
+            echo -e "${YELLOW}Operations with issues:${NC}"
+            for op in "${failed_operations[@]}"; do
+                echo -e "  ${RED}✗${NC} $op"
+            done
+            echo
+        fi
+        
+        if [ ${#failed_configs[@]} -gt 0 ]; then
+            echo -e "${YELLOW}Configuration files that failed:${NC}"
+            for cfg in "${failed_configs[@]}"; do
+                echo -e "  ${RED}✗${NC} $cfg"
+            done
+            echo
+        fi
+        
+        echo -e "${YELLOW}Note: You can manually configure failed items later.${NC}"
+        echo -e "${YELLOW}Most configurations are optional.${NC}"
+        echo
+    fi
+    
     echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
     echo -e "${BLUE}  macOS Tahoe on Arch Linux - Setup Complete${NC}"
     echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"

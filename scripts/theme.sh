@@ -45,11 +45,15 @@ check_arch_linux() {
     fi
 }
 
+# Arrays to track failed installations
+failed_packages=()
+failed_groups=()
+
 # Function to install theme dependencies
 install_theme_deps() {
     print_status "Installing theme dependencies..."
     
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         sassc \
         optipng \
         inkscape \
@@ -59,105 +63,111 @@ install_theme_deps() {
         qt5ct \
         qt6ct \
         kvantum \
-        papirus-icon-theme
+        papirus-icon-theme 2>/dev/null; then
+        print_warning "Some theme dependencies failed"
+        failed_groups+=("Theme dependencies")
+    fi
     
-    print_success "Theme dependencies installed"
+    print_success "Theme dependencies attempted"
 }
 
 # Function to install macOS Tahoe GTK theme
 install_gtk_theme() {
     print_status "Installing macOS Tahoe GTK theme..."
     
-    if [ ! -d "$THEME_DIR/macos-tahoe-gtk-theme" ]; then
-        cd /tmp
-        git clone https://github.com/vinceliuice/MacTahoe-gtk-theme.git
-        cd MacTahoe-gtk-theme
-        
-        # Install theme
-        ./install.sh -d "$THEME_DIR"
-        
-        # Clean up
-        cd /tmp
-        rm -rf macos-tahoe-gtk-theme
-        
+    # Remove existing theme if present
+    if [ -d "$THEME_DIR/macos-tahoe-gtk-theme" ]; then
+        print_status "Removing existing GTK theme..."
+        rm -rf "$THEME_DIR/macos-tahoe-gtk-theme" 2>/dev/null || print_warning "Could not remove existing theme"
+    fi
+    
+    # Install theme
+    cd /tmp
+    if git clone https://github.com/vinceliuice/MacTahoe-gtk-theme.git 2>/dev/null && cd MacTahoe-gtk-theme && ./install.sh -d "$THEME_DIR" 2>/dev/null; then
         print_success "macOS Tahoe GTK theme installed"
     else
-        print_status "macOS Tahoe GTK theme already installed"
+        print_warning "GTK theme installation failed"
+        failed_packages+=("macos-tahoe-gtk-theme")
     fi
+    
+    # Clean up
+    cd /tmp
+    rm -rf MacTahoe-gtk-theme 2>/dev/null
 }
 
 # Function to install macOS Tahoe icons
 install_icon_theme() {
     print_status "Installing macOS Tahoe icon theme..."
     
-    if [ ! -d "$ICON_DIR/macos-tahoe-icon-theme" ]; then
-        cd /tmp
-        git clone https://github.com/vinceliuice/MacTahoe-icon-theme.git
-        cd MacTahoe-icon-theme
-        
-        # Install icons
-        ./install.sh -d "$ICON_DIR"
-        
-        # Clean up
-        cd /tmp
-        rm -rf macos-tahoe-icon-theme
-        
+    # Remove existing icon theme if present
+    if [ -d "$ICON_DIR/macos-tahoe-icon-theme" ]; then
+        print_status "Removing existing icon theme..."
+        rm -rf "$ICON_DIR/macos-tahoe-icon-theme" 2>/dev/null || print_warning "Could not remove existing icons"
+    fi
+    
+    # Install icon theme
+    cd /tmp
+    if git clone https://github.com/vinceliuice/MacTahoe-icon-theme.git 2>/dev/null && cd MacTahoe-icon-theme && ./install.sh -d "$ICON_DIR" 2>/dev/null; then
         print_success "macOS Tahoe icon theme installed"
     else
-        print_status "macOS Tahoe icon theme already installed"
+        print_warning "Icon theme installation failed"
+        failed_packages+=("macos-tahoe-icon-theme")
     fi
+    
+    # Clean up
+    cd /tmp
+    rm -rf MacTahoe-icon-theme 2>/dev/null
 }
 
 # Function to install macOS cursors
 install_cursor_theme() {
     print_status "Installing macOS cursor theme..."
     
-    if [ ! -d "$ICON_DIR/macOS" ]; then
-        cd /tmp
-        git clone https://github.com/vinceliuice/WhiteSur-cursors.git
-        cd WhiteSur-cursors
-        
-        # Install cursors
-        ./install.sh -d "$ICON_DIR"
-        
-        # Clean up
-        cd /tmp
-        rm -rf macOS-cursors
-        
+    # Remove existing cursor theme if present
+    if [ -d "$ICON_DIR/macOS" ]; then
+        print_status "Removing existing cursor theme..."
+        rm -rf "$ICON_DIR/macOS" 2>/dev/null || print_warning "Could not remove existing cursors"
+    fi
+    
+    # Install cursor theme
+    cd /tmp
+    if git clone https://github.com/vinceliuice/WhiteSur-cursors.git 2>/dev/null && cd WhiteSur-cursors && ./install.sh -d "$ICON_DIR" 2>/dev/null; then
         print_success "macOS cursor theme installed"
     else
-        print_status "macOS cursor theme already installed"
+        print_warning "Cursor theme installation failed"
+        failed_packages+=("macos-cursors")
     fi
+    
+    # Clean up
+    cd /tmp
+    rm -rf WhiteSur-cursors 2>/dev/null
 }
 
 # Function to install San Francisco fonts
 install_sf_fonts() {
     print_status "Installing San Francisco fonts..."
     
-    if [ ! -d "$FONT_DIR/SF-Pro" ]; then
-        cd /tmp
-        
-        # Clone SF fonts repository
-        git clone https://github.com/AppleDesignResources/SanFranciscoFont.git
-        cd SanFranciscoFont
-        
-        # Create font directory
-        mkdir -p "$FONT_DIR/SF-Pro"
-        
-        # Copy fonts
-        cp *.ttf "$FONT_DIR/SF-Pro/" 2>/dev/null || true
-        
-        # Update font cache
-        fc-cache -fv
-        
-        # Clean up
-        cd /tmp
-        rm -rf SanFranciscoFont
-        
+    # Remove existing SF fonts if present
+    if [ -d "$FONT_DIR/SF-Pro" ]; then
+        print_status "Removing existing SF fonts..."
+        rm -rf "$FONT_DIR/SF-Pro" 2>/dev/null || print_warning "Could not remove existing fonts"
+    fi
+    
+    # Install SF fonts
+    cd /tmp
+    mkdir -p "$FONT_DIR/SF-Pro"
+    if git clone https://github.com/AppleDesignResources/SanFranciscoFont.git 2>/dev/null && cd SanFranciscoFont; then
+        cp *.ttf "$FONT_DIR/SF-Pro/" 2>/dev/null || print_warning "Some fonts failed to copy"
+        fc-cache -fv > /dev/null 2>&1
         print_success "San Francisco fonts installed"
     else
-        print_status "San Francisco fonts already installed"
+        print_warning "SF fonts installation failed"
+        failed_packages+=("sf-fonts")
     fi
+    
+    # Clean up
+    cd /tmp
+    rm -rf SanFranciscoFont 2>/dev/null
 }
 
 # Function to install additional fonts
@@ -600,8 +610,37 @@ EOF
 
 # Function to print completion message
 print_completion() {
-    print_success "Theme installation completed!"
     echo
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+    
+    # Display summary
+    if [ ${#failed_packages[@]} -eq 0 ] && [ ${#failed_groups[@]} -eq 0 ]; then
+        print_success "✓✓✓ Theme installation completed successfully! ✓✓✓"
+    else
+        print_warning "Theme installation completed with some issues:"
+        echo
+        
+        if [ ${#failed_groups[@]} -gt 0 ]; then
+            echo -e "${YELLOW}Component groups with issues:${NC}"
+            for group in "${failed_groups[@]}"; do
+                echo -e "  ${RED}✗${NC} $group"
+            done
+            echo
+        fi
+        
+        if [ ${#failed_packages[@]} -gt 0 ]; then
+            echo -e "${YELLOW}Individual components that failed:${NC}"
+            for pkg in "${failed_packages[@]}"; do
+                echo -e "  ${RED}✗${NC} $pkg"
+            done
+            echo
+        fi
+        
+        echo -e "${YELLOW}Note: You can try installing failed components manually.${NC}"
+        echo -e "${YELLOW}Most theme components are optional.${NC}"
+        echo
+    fi
+    
     echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
     echo -e "${BLUE}  macOS Tahoe Theme - Installation Complete${NC}"
     echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
@@ -627,7 +666,7 @@ print_completion() {
     echo
     echo -e "${YELLOW}Troubleshooting:${NC}"
     echo -e "- If fonts don't appear, run: ${GREEN}fc-cache -fv${NC}"
-    echo -e "- If theme doesn't apply, check: ${GREEN}echo $GTK_THEME${NC}"
+    echo -e "- If theme doesn't apply, check: ${GREEN}echo \$GTK_THEME${NC}"
     echo -e "- For Qt applications, ensure ${GREEN}qt5ct${NC} is installed"
     echo
     echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"

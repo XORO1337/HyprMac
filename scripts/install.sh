@@ -3,8 +3,6 @@
 # macOS Tahoe on Arch Linux - Installation Script
 # Comprehensive setup for pixel-perfect macOS replica
 
-set -e
-
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -17,6 +15,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 CONFIG_DIR="$HOME/.config"
 BACKUP_DIR="$HOME/.config_backup_$(date +%Y%m%d_%H%M%S)"
+
+# Arrays to track failed installations
+failed_packages=()
+failed_groups=()
+failed_operations=()
 
 # Function to print colored output
 print_status() {
@@ -64,10 +67,13 @@ backup_configs() {
 install_base_deps() {
     print_status "Installing base dependencies..."
     
-    sudo pacman -Syu --noconfirm
+    if ! sudo pacman -Syu --noconfirm 2>/dev/null; then
+        print_warning "System update had issues, continuing..."
+        failed_operations+=("System update")
+    fi
     
     # Base development tools
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         base-devel \
         git \
         curl \
@@ -78,10 +84,13 @@ install_base_deps() {
         meson \
         ninja \
         gcc \
-        pkg-config
+        pkg-config 2>/dev/null; then
+        print_warning "Some base development tools failed to install"
+        failed_groups+=("Base development tools")
+    fi
     
     # Wayland and Hyprland dependencies
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         wayland \
         wayland-protocols \
         libdrm \
@@ -91,15 +100,21 @@ install_base_deps() {
         pango \
         gdk-pixbuf2 \
         librsvg \
-        glib2
+        glib2 2>/dev/null; then
+        print_warning "Some Wayland dependencies failed to install"
+        failed_groups+=("Wayland dependencies")
+    fi
     
     # Graphics and rendering
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         mesa \
-        libglvnd
+        libglvnd 2>/dev/null; then
+        print_warning "Some graphics libraries failed to install"
+        failed_groups+=("Graphics libraries")
+    fi
     
     # Audio and multimedia
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         pipewire \
         pipewire-alsa \
         pipewire-pulse \
@@ -111,10 +126,13 @@ install_base_deps() {
         gst-plugins-base \
         gst-plugins-good \
         gst-plugins-bad \
-        gst-plugins-ugly
+        gst-plugins-ugly 2>/dev/null; then
+        print_warning "Some audio/multimedia packages failed to install"
+        failed_groups+=("Audio/multimedia")
+    fi
     
     # Fonts and theming
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         ttf-dejavu \
         ttf-liberation \
         ttf-roboto \
@@ -126,9 +144,12 @@ install_base_deps() {
         hicolor-icon-theme \
         gtk3 \
         gtk4 \
-        libadwaita
+        libadwaita 2>/dev/null; then
+        print_warning "Some fonts/theming packages failed to install"
+        failed_groups+=("Fonts and theming")
+    fi
     
-    print_success "Base dependencies installed"
+    print_success "Base dependencies installation completed"
 }
 
 # Function to install Hyprland
@@ -136,15 +157,21 @@ install_hyprland() {
     print_status "Installing Hyprland..."
     
     # Install Hyprland from official repos
-    sudo pacman -S --needed --noconfirm hyprland hyprpaper hyprpicker hyprlock hypridle
+    if ! sudo pacman -S --needed --noconfirm hyprland hyprpaper hyprpicker hyprlock hypridle 2>/dev/null; then
+        print_warning "Some Hyprland packages failed to install"
+        failed_groups+=("Hyprland core")
+    fi
     
     # Install additional Hyprland utilities
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         grim \
         slurp \
-        wl-clipboard
+        wl-clipboard 2>/dev/null; then
+        print_warning "Some Hyprland utilities failed to install"
+        failed_groups+=("Hyprland utilities")
+    fi
     
-    print_success "Hyprland installed"
+    print_success "Hyprland installation completed"
 }
 
 # Function to install AUR helper (yay)
@@ -152,12 +179,34 @@ install_aur_helper() {
     print_status "Installing AUR helper (yay)..."
     
     if ! command -v yay &> /dev/null; then
+        if ! cd /tmp 2>/dev/null; then
+            print_warning "Failed to change to /tmp directory"
+            failed_operations+=("AUR helper installation")
+            return 1
+        fi
+        
+        if ! git clone https://aur.archlinux.org/yay.git 2>/dev/null; then
+            print_warning "Failed to clone yay repository"
+            failed_packages+=("yay")
+            return 1
+        fi
+        
+        if ! cd yay 2>/dev/null; then
+            print_warning "Failed to enter yay directory"
+            failed_packages+=("yay")
+            return 1
+        fi
+        
+        if ! makepkg -si --noconfirm 2>/dev/null; then
+            print_warning "Failed to build and install yay"
+            failed_packages+=("yay")
+            cd /tmp
+            rm -rf yay 2>/dev/null
+            return 1
+        fi
+        
         cd /tmp
-        git clone https://aur.archlinux.org/yay.git
-        cd yay
-        makepkg -si --noconfirm
-        cd ..
-        rm -rf yay
+        rm -rf yay 2>/dev/null
         print_success "yay installed"
     else
         print_status "yay is already installed"
@@ -168,12 +217,25 @@ install_aur_helper() {
 install_aur_packages() {
     print_status "Installing AUR packages..."
     
-    # Install essential AUR packages
-    yay -S --needed --noconfirm \
-        swww \
-        grimblast-git 2>/dev/null || print_warning "grimblast-git failed to install"
+    # Check if yay is available
+    if ! command -v yay &> /dev/null; then
+        print_warning "yay not available, skipping AUR packages"
+        failed_groups+=("AUR packages")
+        return 1
+    fi
     
-    print_success "AUR packages installed"
+    # Install essential AUR packages
+    if ! yay -S --needed --noconfirm swww 2>/dev/null; then
+        print_warning "swww failed to install"
+        failed_packages+=("swww")
+    fi
+    
+    if ! yay -S --needed --noconfirm grimblast-git 2>/dev/null; then
+        print_warning "grimblast-git failed to install"
+        failed_packages+=("grimblast-git")
+    fi
+    
+    print_success "AUR packages installation completed"
 }
 
 # Function to install AGS (Advanced Gtk+ Sequencer)
@@ -181,7 +243,7 @@ install_ags() {
     print_status "Installing AGS (Advanced Gtk+ Sequencer)..."
     
     # Install dependencies
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         gobject-introspection \
         vala \
         libgee \
@@ -192,12 +254,23 @@ install_ags() {
         gst-plugins-base \
         gtk3 \
         gtk4 \
-        libadwaita
+        libadwaita 2>/dev/null; then
+        print_warning "Some AGS dependencies failed to install"
+        failed_groups+=("AGS dependencies")
+    fi
     
     # Install AGS from AUR
-    yay -S --needed --noconfirm ags-git
+    if command -v yay &> /dev/null; then
+        if ! yay -S --needed --noconfirm ags-git 2>/dev/null; then
+            print_warning "AGS failed to install"
+            failed_packages+=("ags-git")
+        fi
+    else
+        print_warning "yay not available, skipping AGS"
+        failed_packages+=("ags-git")
+    fi
     
-    print_success "AGS installed"
+    print_success "AGS installation completed"
 }
 
 # Function to install Fabric (alternative to AGS)
@@ -205,7 +278,15 @@ install_fabric() {
     print_status "Installing Fabric..."
     
     # Fabric is a modern widget toolkit (optional)
-    yay -S --needed --noconfirm fabric-git 2>/dev/null || print_warning "Fabric installation skipped"
+    if command -v yay &> /dev/null; then
+        if ! yay -S --needed --noconfirm fabric-git 2>/dev/null; then
+            print_warning "Fabric installation skipped (optional)"
+            failed_packages+=("fabric-git (optional)")
+        fi
+    else
+        print_warning "yay not available, skipping Fabric"
+        failed_packages+=("fabric-git")
+    fi
     
     print_success "Fabric installation attempted"
 }
@@ -215,13 +296,21 @@ install_launchers() {
     print_status "Installing application launchers..."
     
     # Wofi (primary launcher)
-    sudo pacman -S --needed --noconfirm wofi
+    if ! sudo pacman -S --needed --noconfirm wofi 2>/dev/null; then
+        print_warning "Wofi failed to install"
+        failed_packages+=("wofi")
+    fi
     
     # Additional launchers (optional)
     print_status "Installing optional wofi extensions..."
-    yay -S --needed --noconfirm wofi-emoji 2>/dev/null || print_warning "Optional wofi extensions skipped"
+    if command -v yay &> /dev/null; then
+        if ! yay -S --needed --noconfirm wofi-emoji 2>/dev/null; then
+            print_warning "Optional wofi extensions skipped"
+            failed_packages+=("wofi-emoji (optional)")
+        fi
+    fi
     
-    print_success "Launchers installed"
+    print_success "Launchers installation completed"
 }
 
 # Function to install file managers
@@ -229,7 +318,7 @@ install_file_managers() {
     print_status "Installing file managers..."
     
     # Nautilus (GNOME file manager)
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         nautilus \
         file-roller \
         gvfs \
@@ -237,16 +326,22 @@ install_file_managers() {
         gvfs-afc \
         gvfs-gphoto2 \
         gvfs-nfs \
-        gvfs-smb
+        gvfs-smb 2>/dev/null; then
+        print_warning "Some Nautilus packages failed to install"
+        failed_groups+=("Nautilus file manager")
+    fi
     
     # Thunar (XFCE file manager) - alternative
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         thunar \
         thunar-archive-plugin \
         thunar-media-tags-plugin \
-        tumbler
+        tumbler 2>/dev/null; then
+        print_warning "Some Thunar packages failed to install"
+        failed_groups+=("Thunar file manager")
+    fi
     
-    print_success "File managers installed"
+    print_success "File managers installation completed"
 }
 
 # Function to install terminal and development tools
@@ -254,13 +349,16 @@ install_terminal_tools() {
     print_status "Installing terminal and development tools..."
     
     # Terminal emulators
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         alacritty \
         kitty \
-        foot
+        foot 2>/dev/null; then
+        print_warning "Some terminal emulators failed to install"
+        failed_groups+=("Terminal emulators")
+    fi
     
     # Shell and tools
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         zsh \
         fish \
         starship \
@@ -270,14 +368,20 @@ install_terminal_tools() {
         ripgrep \
         fzf \
         tmux \
-        neovim
+        neovim 2>/dev/null; then
+        print_warning "Some shell tools failed to install"
+        failed_groups+=("Shell and CLI tools")
+    fi
     
     # Development tools (optional)
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         rustup \
-        go 2>/dev/null || print_warning "Some dev tools skipped"
+        go 2>/dev/null; then
+        print_warning "Some dev tools skipped (optional)"
+        failed_groups+=("Development tools (optional)")
+    fi
     
-    print_success "Terminal and development tools installed"
+    print_success "Terminal and development tools installation completed"
 }
 
 # Function to install macOS theme components
@@ -285,23 +389,34 @@ install_macos_theme() {
     print_status "Installing macOS theme components..."
     
     # Install macOS themes from AUR
-    yay -S --needed --noconfirm \
-        macos-sierra-gtk-theme-git \
-        macos-sierra-icon-theme-git \
-        macos-cursors-git \
-        macos-wallpapers-git \
-        san-francisco-pro-fonts-git \
-        sf-mono-fonts-git \
-        sf-pro-fonts-git
+    if command -v yay &> /dev/null; then
+        if ! yay -S --needed --noconfirm \
+            macos-sierra-gtk-theme-git \
+            macos-sierra-icon-theme-git \
+            macos-cursors-git \
+            macos-wallpapers-git \
+            san-francisco-pro-fonts-git \
+            sf-mono-fonts-git \
+            sf-pro-fonts-git 2>/dev/null; then
+            print_warning "Some macOS theme components failed to install"
+            failed_groups+=("macOS theme components")
+        fi
+    else
+        print_warning "yay not available, skipping macOS themes"
+        failed_groups+=("macOS theme components")
+    fi
     
     # Install additional theming tools
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         lxappearance \
         qt5ct \
         qt6ct \
-        kvantum
+        kvantum 2>/dev/null; then
+        print_warning "Some theming tools failed to install"
+        failed_groups+=("Theming tools")
+    fi
     
-    print_success "macOS theme components installed"
+    print_success "macOS theme components installation completed"
 }
 
 # Function to install wallpaper engine dependencies
@@ -309,22 +424,32 @@ install_wallpaper_deps() {
     print_status "Installing wallpaper engine dependencies..."
     
     # Video wallpaper dependencies
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         mpv \
         ffmpeg \
         ffmpegthumbnailer \
-        libmpv
+        libmpv 2>/dev/null; then
+        print_warning "Some video wallpaper dependencies failed to install"
+        failed_groups+=("Video wallpaper dependencies")
+    fi
     
     # Image wallpaper dependencies
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         imagemagick \
-        feh
+        feh 2>/dev/null; then
+        print_warning "Some image wallpaper dependencies failed to install"
+        failed_groups+=("Image wallpaper dependencies")
+    fi
     
     # Install wallpaper engines from AUR
-    yay -S --needed --noconfirm \
-        swww 2>/dev/null || print_warning "swww installation skipped"
+    if command -v yay &> /dev/null; then
+        if ! yay -S --needed --noconfirm swww 2>/dev/null; then
+            print_warning "swww installation skipped"
+            failed_packages+=("swww")
+        fi
+    fi
     
-    print_success "Wallpaper engine dependencies installed"
+    print_success "Wallpaper engine dependencies installation completed"
 }
 
 # Function to install utility applications
@@ -332,35 +457,54 @@ install_utility_apps() {
     print_status "Installing utility applications..."
     
     # System utilities
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         neofetch \
         htop \
-        btop
+        btop 2>/dev/null; then
+        print_warning "Some system utilities failed to install"
+        failed_groups+=("System utilities")
+    fi
     
     # Network utilities
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         networkmanager \
         nm-connection-editor \
         blueman \
         bluez \
         bluez-utils \
-        openssh
+        openssh 2>/dev/null; then
+        print_warning "Some network utilities failed to install"
+        failed_groups+=("Network utilities")
+    fi
     
     # Media utilities (optional)
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         mpv \
-        gimp 2>/dev/null || print_warning "Some media apps skipped"
+        gimp 2>/dev/null; then
+        print_warning "Some media apps skipped (optional)"
+        failed_groups+=("Media apps (optional)")
+    fi
     
     # Office and productivity (optional)
-    sudo pacman -S --needed --noconfirm \
-        firefox 2>/dev/null || print_warning "Some productivity apps skipped"
+    if ! sudo pacman -S --needed --noconfirm firefox 2>/dev/null; then
+        print_warning "Some productivity apps skipped (optional)"
+        failed_packages+=("firefox (optional)")
+    fi
     
     # Install additional utilities from AUR (optional)
     print_status "Installing optional AUR utilities..."
-    yay -S --needed --noconfirm visual-studio-code-bin 2>/dev/null || print_warning "VS Code skipped"
-    yay -S --needed --noconfirm spotify 2>/dev/null || print_warning "Spotify skipped"
+    if command -v yay &> /dev/null; then
+        if ! yay -S --needed --noconfirm visual-studio-code-bin 2>/dev/null; then
+            print_warning "VS Code skipped (optional)"
+            failed_packages+=("visual-studio-code-bin (optional)")
+        fi
+        if ! yay -S --needed --noconfirm spotify 2>/dev/null; then
+            print_warning "Spotify skipped (optional)"
+            failed_packages+=("spotify (optional)")
+        fi
+    fi
     
-    print_success "Utility applications installed"
+    print_success "Utility applications installation completed"
 }
 
 # Function to create user directories
@@ -368,21 +512,33 @@ create_user_dirs() {
     print_status "Creating user directories..."
     
     # Create standard XDG directories
-    xdg-user-dirs-update
+    if ! xdg-user-dirs-update 2>/dev/null; then
+        print_warning "Failed to update XDG user directories"
+        failed_operations+=("XDG user directories")
+    fi
     
     # Create project-specific directories
-    mkdir -p "$HOME/.config/hypr"
-    mkdir -p "$HOME/.config/ags"
-    mkdir -p "$HOME/.config/waybar"
-    mkdir -p "$HOME/.config/wofi"
-    mkdir -p "$HOME/.config/wallpaper"
-    mkdir -p "$HOME/.config/gSlapper"
-    mkdir -p "$HOME/.config/swww"
-    mkdir -p "$HOME/.local/share/applications"
-    mkdir -p "$HOME/.local/bin"
-    mkdir -p "$HOME/Documents/Wallpapers"
-    mkdir -p "$HOME/Pictures/Screenshots"
-    mkdir -p "$HOME/Development"
+    local dirs=(
+        "$HOME/.config/hypr"
+        "$HOME/.config/ags"
+        "$HOME/.config/waybar"
+        "$HOME/.config/wofi"
+        "$HOME/.config/wallpaper"
+        "$HOME/.config/gSlapper"
+        "$HOME/.config/swww"
+        "$HOME/.local/share/applications"
+        "$HOME/.local/bin"
+        "$HOME/Documents/Wallpapers"
+        "$HOME/Pictures/Screenshots"
+        "$HOME/Development"
+    )
+    
+    for dir in "${dirs[@]}"; do
+        if ! mkdir -p "$dir" 2>/dev/null; then
+            print_warning "Failed to create directory: $dir"
+            failed_operations+=("Create directory: $(basename "$dir")")
+        fi
+    done
     
     print_success "User directories created"
 }
@@ -392,20 +548,36 @@ install_fonts() {
     print_status "Installing additional fonts..."
     
     # Install nerd fonts for icons (selected fonts only)
-    yay -S --needed --noconfirm \
-        ttf-meslo-nerd 2>/dev/null || print_warning "Nerd fonts skipped"
+    if command -v yay &> /dev/null; then
+        if ! yay -S --needed --noconfirm ttf-meslo-nerd 2>/dev/null; then
+            print_warning "Nerd fonts skipped"
+            failed_packages+=("ttf-meslo-nerd")
+        fi
+    else
+        print_warning "yay not available, skipping nerd fonts"
+        failed_packages+=("ttf-meslo-nerd")
+    fi
     
-    yay -S --needed --noconfirm \
-        ttf-jetbrains-mono-nerd 2>/dev/null || print_warning "JetBrains Mono Nerd skipped"
+    if command -v yay &> /dev/null; then
+        if ! yay -S --needed --noconfirm ttf-jetbrains-mono-nerd 2>/dev/null; then
+            print_warning "JetBrains Mono Nerd skipped"
+            failed_packages+=("ttf-jetbrains-mono-nerd")
+        fi
+    fi
     
     # Install emoji fonts
-    sudo pacman -S --needed --noconfirm \
-        noto-fonts-emoji
+    if ! sudo pacman -S --needed --noconfirm noto-fonts-emoji 2>/dev/null; then
+        print_warning "Emoji fonts failed to install"
+        failed_packages+=("noto-fonts-emoji")
+    fi
     
     # Update font cache
-    fc-cache -fv
+    if ! fc-cache -fv 2>/dev/null; then
+        print_warning "Failed to update font cache"
+        failed_operations+=("Font cache update")
+    fi
     
-    print_success "Fonts installed and cached"
+    print_success "Fonts installation completed"
 }
 
 # Function to enable system services
@@ -413,55 +585,104 @@ enable_services() {
     print_status "Enabling system services..."
     
     # NetworkManager
-    sudo systemctl enable NetworkManager.service
-    sudo systemctl start NetworkManager.service
+    if ! sudo systemctl enable NetworkManager.service 2>/dev/null; then
+        print_warning "Failed to enable NetworkManager"
+        failed_operations+=("Enable NetworkManager")
+    fi
+    if ! sudo systemctl start NetworkManager.service 2>/dev/null; then
+        print_warning "Failed to start NetworkManager"
+        failed_operations+=("Start NetworkManager")
+    fi
     
     # Bluetooth
-    sudo systemctl enable bluetooth.service
-    sudo systemctl start bluetooth.service
+    if ! sudo systemctl enable bluetooth.service 2>/dev/null; then
+        print_warning "Failed to enable Bluetooth (might not be installed)"
+        failed_operations+=("Enable Bluetooth")
+    fi
+    if ! sudo systemctl start bluetooth.service 2>/dev/null; then
+        print_warning "Failed to start Bluetooth"
+        failed_operations+=("Start Bluetooth")
+    fi
     
     # PipeWire
-    systemctl --user enable pipewire.service
-    systemctl --user start pipewire.service
+    if ! systemctl --user enable pipewire.service 2>/dev/null; then
+        print_warning "Failed to enable PipeWire"
+        failed_operations+=("Enable PipeWire")
+    fi
+    if ! systemctl --user start pipewire.service 2>/dev/null; then
+        print_warning "Failed to start PipeWire"
+        failed_operations+=("Start PipeWire")
+    fi
     
-    systemctl --user enable pipewire-pulse.service
-    systemctl --user start pipewire-pulse.service
+    if ! systemctl --user enable pipewire-pulse.service 2>/dev/null; then
+        print_warning "Failed to enable PipeWire Pulse"
+        failed_operations+=("Enable PipeWire Pulse")
+    fi
+    if ! systemctl --user start pipewire-pulse.service 2>/dev/null; then
+        print_warning "Failed to start PipeWire Pulse"
+        failed_operations+=("Start PipeWire Pulse")
+    fi
     
-    systemctl --user enable wireplumber.service
-    systemctl --user start wireplumber.service
+    if ! systemctl --user enable wireplumber.service 2>/dev/null; then
+        print_warning "Failed to enable WirePlumber"
+        failed_operations+=("Enable WirePlumber")
+    fi
+    if ! systemctl --user start wireplumber.service 2>/dev/null; then
+        print_warning "Failed to start WirePlumber"
+        failed_operations+=("Start WirePlumber")
+    fi
     
     # SSH
-    sudo systemctl enable sshd.service
+    if ! sudo systemctl enable sshd.service 2>/dev/null; then
+        print_warning "Failed to enable SSH (might not be installed)"
+        failed_operations+=("Enable SSH")
+    fi
     
-    print_success "System services enabled"
+    print_success "System services configuration completed"
 }
 
 # Function to clone and setup repositories
 setup_repositories() {
     print_status "Setting up additional repositories..."
     
-    cd "$HOME/Development"
+    if ! cd "$HOME/Development" 2>/dev/null; then
+        print_warning "Failed to change to Development directory"
+        failed_operations+=("Change to Development directory")
+        return 1
+    fi
     
     # Clone macOS theme repositories
     if [ ! -d "macos-sierra-gtk-theme" ]; then
-        git clone https://github.com/vinceliuice/macos-sierra-gtk-theme.git
+        if ! git clone https://github.com/vinceliuice/macos-sierra-gtk-theme.git 2>/dev/null; then
+            print_warning "Failed to clone macOS Sierra GTK theme"
+            failed_operations+=("Clone macOS Sierra GTK theme")
+        fi
     fi
     
     if [ ! -d "macOS-San-Francisco-Font" ]; then
-        git clone https://github.com/AppleDesignResources/SanFranciscoFont.git macOS-San-Francisco-Font
+        if ! git clone https://github.com/AppleDesignResources/SanFranciscoFont.git macOS-San-Francisco-Font 2>/dev/null; then
+            print_warning "Failed to clone San Francisco Font"
+            failed_operations+=("Clone San Francisco Font")
+        fi
     fi
     
     # Clone Hyprland configurations
     if [ ! -d "hyprland-macos-config" ]; then
-        git clone https://github.com/prasanthrangan/hyprdots.git hyprland-macos-config
+        if ! git clone https://github.com/prasanthrangan/hyprdots.git hyprland-macos-config 2>/dev/null; then
+            print_warning "Failed to clone Hyprland configs"
+            failed_operations+=("Clone Hyprland configs")
+        fi
     fi
     
     # Clone AGS widget examples
     if [ ! -d "ags-widgets" ]; then
-        git clone https://github.com/Aylur/ags-widgets.git
+        if ! git clone https://github.com/Aylur/ags-widgets.git 2>/dev/null; then
+            print_warning "Failed to clone AGS widgets"
+            failed_operations+=("Clone AGS widgets")
+        fi
     fi
     
-    print_success "Repositories cloned"
+    print_success "Repositories setup completed"
 }
 
 # Function to set permissions
@@ -469,20 +690,71 @@ set_permissions() {
     print_status "Setting file permissions..."
     
     # Make scripts executable
-    chmod +x "$PROJECT_ROOT/scripts/"*.sh
-    chmod +x "$HOME/.local/bin/"* 2>/dev/null || true
+    if ! chmod +x "$PROJECT_ROOT/scripts/"*.sh 2>/dev/null; then
+        print_warning "Failed to make some project scripts executable"
+        failed_operations+=("Make project scripts executable")
+    fi
+    
+    if ! chmod +x "$HOME/.local/bin/"* 2>/dev/null; then
+        print_warning "Failed to make some user scripts executable"
+        failed_operations+=("Make user scripts executable")
+    fi
     
     # Set user ownership
-    sudo chown -R "$USER:$USER" "$CONFIG_DIR"
-    sudo chown -R "$USER:$USER" "$HOME/.local"
+    if ! sudo chown -R "$USER:$USER" "$CONFIG_DIR" 2>/dev/null; then
+        print_warning "Failed to set ownership for config directory"
+        failed_operations+=("Set config directory ownership")
+    fi
     
-    print_success "Permissions set"
+    if ! sudo chown -R "$USER:$USER" "$HOME/.local" 2>/dev/null; then
+        print_warning "Failed to set ownership for .local directory"
+        failed_operations+=("Set .local directory ownership")
+    fi
+    
+    print_success "Permissions configuration completed"
 }
 
 # Function to print completion message
 print_completion() {
-    print_success "Installation completed successfully!"
     echo
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+    
+    # Display summary
+    if [ ${#failed_packages[@]} -eq 0 ] && [ ${#failed_groups[@]} -eq 0 ] && [ ${#failed_operations[@]} -eq 0 ]; then
+        print_success "✓✓✓ Installation completed successfully! ✓✓✓"
+    else
+        print_warning "Installation completed with some issues:"
+        echo
+        
+        if [ ${#failed_groups[@]} -gt 0 ]; then
+            echo -e "${YELLOW}Component groups with issues:${NC}"
+            for group in "${failed_groups[@]}"; do
+                echo -e "  ${RED}✗${NC} $group"
+            done
+            echo
+        fi
+        
+        if [ ${#failed_packages[@]} -gt 0 ]; then
+            echo -e "${YELLOW}Individual packages that failed:${NC}"
+            for pkg in "${failed_packages[@]}"; do
+                echo -e "  ${RED}✗${NC} $pkg"
+            done
+            echo
+        fi
+        
+        if [ ${#failed_operations[@]} -gt 0 ]; then
+            echo -e "${YELLOW}Operations that failed:${NC}"
+            for op in "${failed_operations[@]}"; do
+                echo -e "  ${RED}✗${NC} $op"
+            done
+            echo
+        fi
+        
+        echo -e "${YELLOW}Note: You can try installing failed packages manually.${NC}"
+        echo -e "${YELLOW}Most packages are optional and the system should work.${NC}"
+        echo
+    fi
+    
     echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
     echo -e "${BLUE}  macOS Tahoe on Arch Linux - Installation Complete${NC}"
     echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
