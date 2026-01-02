@@ -209,7 +209,7 @@ install_all_packages() {
     # Install GTK and theming
     print_status "Installing GTK and theming packages..."
     sudo pacman -S --needed --noconfirm \
-        gtk3 gtk4 libadwaita gtk-engine-murrine gtk-engines \
+        gtk3 gtk4 libadwaita \
         sassc optipng inkscape imagemagick librsvg \
         lxappearance papirus-icon-theme \
         qt5ct qt6ct kvantum \
