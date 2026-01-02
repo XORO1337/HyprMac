@@ -3,8 +3,6 @@
 # macOS Tahoe Theme Installation Script
 # Installs and applies the macOS theme components
 
-set -e
-
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -354,9 +352,13 @@ EOF
     
     # Apply X11 resources
     if command -v xrdb &> /dev/null; then
-        xrdb -merge "$HOME/.Xresources"
-    fi
-    
+        xrdb -merge "$HOM (only if running X11 session)
+    if command -v xrdb &> /dev/null && [ -n "$DISPLAY" ]; then
+        xrdb -merge "$HOME/.Xresources" 2>/dev/null || {
+            print_warning "xrdb not available (Wayland session detected)"
+        }
+    else
+        print_status "Skipping X11 resources (not running X11 session)
     print_success "Window manager theme applied"
 }
 
