@@ -148,7 +148,7 @@ install_all_packages() {
     # Install Wayland and Hyprland dependencies
     print_status "Installing Wayland and Hyprland dependencies..."
     sudo pacman -S --needed --noconfirm \
-        wayland wayland-protocols wayland-utils wlroots libdrm \
+        wayland wayland-protocols libdrm \
         libxkbcommon pixman cairo pango gdk-pixbuf2 librsvg glib2 \
         || { print_error "Failed to install Wayland dependencies"; return 1; }
     print_success "✓ Wayland dependencies installed"
@@ -157,16 +157,27 @@ install_all_packages() {
     print_status "Installing Hyprland and utilities..."
     sudo pacman -S --needed --noconfirm \
         hyprland hyprpaper hyprpicker hyprlock hypridle \
-        slurp wl-clipboard wl-clip-persist wlr-randr wlsunset kanshi \
+        slurp wl-clipboard grim \
         || { print_error "Failed to install Hyprland"; return 1; }
     print_success "✓ Hyprland installed"
     
-    # Install graphics and rendering
-    print_status "Installing graphics drivers and rendering libraries..."
+    # Install graphics and rendering (optional GPU drivers)
+    print_status "Installing graphics libraries..."
     sudo pacman -S --needed --noconfirm \
-        mesa vulkan-radeon vulkan-intel nvidia-utils libglvnd \
-        lib32-mesa lib32-nvidia-utils \
-        || { print_warning "Some GPU drivers may have failed"; }
+        mesa libglvnd \
+        || { print_error "Failed to install graphics packages"; return 1; }
+    
+    # Try to install GPU drivers (non-critical)
+    print_status "Installing GPU drivers (optional)..."
+    sudo pacman -S --needed --noconfirm \
+        vulkan-radeon vulkan-intel 2>/dev/null || print_warning "Some GPU drivers skipped"
+    
+    # NVIDIA drivers only if NVIDIA GPU detected
+    if lspci | grep -i nvidia &> /dev/null; then
+        print_status "NVIDIA GPU detected, installing drivers..."
+        sudo pacman -S --needed --noconfirm nvidia-utils 2>/dev/null || print_warning "NVIDIA drivers skipped"
+    fi
+    
     print_success "✓ Graphics packages installed"
     
     # Install audio and multimedia
@@ -174,27 +185,34 @@ install_all_packages() {
     sudo pacman -S --needed --noconfirm \
         pipewire pipewire-alsa pipewire-pulse wireplumber pavucontrol alsa-utils \
         ffmpeg ffmpegthumbnailer gst-plugins-base gst-plugins-good \
-        gst-plugins-bad gst-plugins-ugly mpv vlc obs-studio \
+        gst-plugins-bad gst-plugins-ugly mpv \
         || { print_error "Failed to install audio packages"; return 1; }
     print_success "✓ Audio and multimedia installed"
     
     # Install fonts
     print_status "Installing fonts..."
     sudo pacman -S --needed --noconfirm \
-        ttf-dejavu ttf-liberation ttf-droid ttf-roboto ttf-opensans \
+        ttf-dejavu ttf-liberation ttf-roboto ttf-opensans \
         ttf-font-awesome noto-fonts noto-fonts-emoji ttf-fira-code \
         ttf-jetbrains-mono ttf-cascadia-code ttf-hack \
-        adwaita-icon-theme hicolor-icon-theme \
+        adobe-source-code-pro-fonts \
         || { print_error "Failed to install fonts"; return 1; }
     print_success "✓ Fonts installed"
+    
+    # Install icon themes
+    print_status "Installing icon themes..."
+    sudo pacman -S --needed --noconfirm \
+        adwaita-icon-theme hicolor-icon-theme papirus-icon-theme \
+        || { print_error "Failed to install icon themes"; return 1; }
+    print_success "✓ Icon themes installed"
     
     # Install GTK and theming
     print_status "Installing GTK and theming packages..."
     sudo pacman -S --needed --noconfirm \
         gtk3 gtk4 libadwaita gtk-engine-murrine gtk-engines \
         sassc optipng inkscape imagemagick librsvg \
-        lxappearance gtk-theme-config papirus-icon-theme \
-        qt5ct qt6ct kvantum-qt5 kvantum-qt6 \
+        lxappearance papirus-icon-theme \
+        qt5ct qt6ct kvantum \
         || { print_error "Failed to install GTK packages"; return 1; }
     print_success "✓ GTK and theming installed"
     
@@ -202,55 +220,59 @@ install_all_packages() {
     print_status "Installing application launchers and system utilities..."
     sudo pacman -S --needed --noconfirm \
         wofi brightnessctl playerctl network-manager-applet \
-        blueman polkit-kde-agent dunst \
+        blueman dunst \
         || { print_error "Failed to install launchers"; return 1; }
+    
+    # Polkit agent
+    sudo pacman -S --needed --noconfirm polkit-kde-agent 2>/dev/null || \
+        sudo pacman -S --needed --noconfirm polkit-gnome 2>/dev/null || \
+        print_warning "No polkit agent installed"
+    
     print_success "✓ Launchers and utilities installed"
     
     # Install desktop portals
     print_status "Installing desktop portals..."
     sudo pacman -S --needed --noconfirm \
-        xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-desktop-portal-wlr \
+        xdg-desktop-portal-hyprland xdg-desktop-portal-gtk \
         || { print_error "Failed to install desktop portals"; return 1; }
     print_success "✓ Desktop portals installed"
     
     # Install file managers
     print_status "Installing file managers..."
     sudo pacman -S --needed --noconfirm \
-        nautilus nautilus-open-any-terminal file-roller \
+        nautilus file-roller \
         gvfs gvfs-mtp gvfs-afc gvfs-gphoto2 gvfs-nfs gvfs-smb \
         thunar thunar-archive-plugin thunar-media-tags-plugin \
-        thunar-vcs-plugin tumbler tumbler-plugins-extra \
+        tumbler \
         || { print_error "Failed to install file managers"; return 1; }
     print_success "✓ File managers installed"
     
     # Install terminal emulators
     print_status "Installing terminal emulators..."
     sudo pacman -S --needed --noconfirm \
-        alacritty kitty foot wezterm \
-        || { print_warning "Some terminal emulators may have failed"; }
+        alacritty kitty foot \
+        || { print_error "Failed to install terminal emulators"; return 1; }
     print_success "✓ Terminal emulators installed"
     
     # Install shell tools
     print_status "Installing shell and development tools..."
     sudo pacman -S --needed --noconfirm \
-        zsh fish starship eza bat fd ripgrep fzf tmux neovim helix \
+        zsh fish starship eza bat fd ripgrep fzf tmux neovim \
         || { print_warning "Some shell tools may have failed"; }
     print_success "✓ Shell tools installed"
     
     # Install system utilities
     print_status "Installing system utilities..."
     sudo pacman -S --needed --noconfirm \
-        neofetch htop btop iotop nethogs vnstat lm_sensors hwinfo inxi lshw \
-        networkmanager nm-connection-editor bluez bluez-utils openssh \
-        feh sxiv nsxiv \
+        neofetch htop btop networkmanager nm-connection-editor \
+        bluez bluez-utils openssh feh \
         || { print_warning "Some utilities may have failed"; }
     print_success "✓ System utilities installed"
     
-    # Install applications
-    print_status "Installing productivity applications..."
+    # Install applications (optional)
+    print_status "Installing productivity applications (optional)..."
     sudo pacman -S --needed --noconfirm \
-        firefox chromium libreoffice-fresh thunderbird \
-        gimp inkscape krita kdenlive \
+        firefox gimp \
         || { print_warning "Some applications may have failed"; }
     print_success "✓ Applications installed"
     
@@ -261,14 +283,24 @@ install_all_packages() {
         || { print_error "Failed to install AGS dependencies"; return 1; }
     print_success "✓ AGS dependencies installed"
     
+    # Install Python dependencies for wallpaper picker
+    print_status "Installing Python dependencies..."
+    sudo pacman -S --needed --noconfirm \
+        python python-pip python-gobject python-cairo gtk3 \
+        || { print_warning "Python dependencies may have failed"; }
+    print_success "✓ Python dependencies installed"
+    
     # Install AUR helper (yay) if not present
     if ! command -v yay &> /dev/null; then
         print_status "Installing AUR helper (yay)..."
         cd /tmp
+        if [ -d "yay" ]; then
+            rm -rf yay
+        fi
         git clone https://aur.archlinux.org/yay.git
         cd yay
         makepkg -si --noconfirm
-        cd ..
+        cd /tmp
         rm -rf yay
         print_success "✓ yay installed"
     else
@@ -277,25 +309,42 @@ install_all_packages() {
     
     # Install AUR packages
     print_status "Installing AUR packages (this may take a while)..."
-    yay -S --needed --noconfirm \
-        swww \
-        grimblast-git \
-        ags-git \
-        || { print_warning "Some AUR packages may have failed"; }
+    echo
+    
+    # Install swww (wallpaper engine)
+    print_status "Installing swww..."
+    yay -S --needed --noconfirm swww 2>/dev/null || print_warning "swww installation failed"
+    
+    # Install grimblast (screenshot utility)
+    print_status "Installing grimblast..."
+    yay -S --needed --noconfirm grimblast-git 2>/dev/null || print_warning "grimblast installation failed"
+    
+    # Install AGS
+    print_status "Installing AGS..."
+    yay -S --needed --noconfirm ags 2>/dev/null || print_warning "AGS installation failed"
+    
+    # Install wezterm terminal (optional)
+    print_status "Installing wezterm (optional)..."
+    yay -S --needed --noconfirm wezterm 2>/dev/null || print_warning "wezterm installation skipped"
+    
+    # Install additional fonts from AUR
+    print_status "Installing additional fonts from AUR..."
+    yay -S --needed --noconfirm ttf-ms-fonts 2>/dev/null || print_warning "MS fonts skipped"
+    
     print_success "✓ AUR packages installed"
     
     # Enable and start services
     print_status "Enabling system services..."
-    sudo systemctl enable NetworkManager.service || true
-    sudo systemctl start NetworkManager.service || true
-    sudo systemctl enable bluetooth.service || true
-    sudo systemctl start bluetooth.service || true
-    systemctl --user enable pipewire.service || true
-    systemctl --user start pipewire.service || true
-    systemctl --user enable pipewire-pulse.service || true
-    systemctl --user start pipewire-pulse.service || true
-    systemctl --user enable wireplumber.service || true
-    systemctl --user start wireplumber.service || true
+    sudo systemctl enable NetworkManager.service 2>/dev/null || true
+    sudo systemctl start NetworkManager.service 2>/dev/null || true
+    sudo systemctl enable bluetooth.service 2>/dev/null || true
+    sudo systemctl start bluetooth.service 2>/dev/null || true
+    systemctl --user enable pipewire.service 2>/dev/null || true
+    systemctl --user start pipewire.service 2>/dev/null || true
+    systemctl --user enable pipewire-pulse.service 2>/dev/null || true
+    systemctl --user start pipewire-pulse.service 2>/dev/null || true
+    systemctl --user enable wireplumber.service 2>/dev/null || true
+    systemctl --user start wireplumber.service 2>/dev/null || true
     print_success "✓ Services enabled"
     
     # Update font cache
