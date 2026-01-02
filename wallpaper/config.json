@@ -1,0 +1,55 @@
+{
+  "default_wallpaper": "~/Documents/Wallpapers/macos-tahoe-default.jpg",
+  "video_wallpaper_engine": "gSlapper",
+  "image_wallpaper_engine": "swww",
+  "thumbnail_size": 200,
+  "grid_columns": 4,
+  "auto_start_video": true,
+  "video_volume": 0.0,
+  "slideshow_enabled": false,
+  "slideshow_interval": 300,
+  "supported_image_formats": [
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".webp",
+    ".bmp",
+    ".gif"
+  ],
+  "supported_video_formats": [
+    ".mp4",
+    ".webm",
+    ".mkv",
+    ".avi",
+    ".mov"
+  ],
+  "gSlapper_config": {
+    "loop": true,
+    "audio": false,
+    "hardware_acceleration": true,
+    "mpv_options": [
+      "--vo=gpu",
+      "--hwdec=auto",
+      "--loop=inf",
+      "--no-audio"
+    ]
+  },
+  "swww_config": {
+    "transition_type": "any",
+    "transition_duration": 2.0,
+    "transition_fps": 60,
+    "transition_step": 90
+  },
+  "slideshow_config": {
+    "random_order": false,
+    "include_videos": false,
+    "fade_transition": true,
+    "transition_duration": 1.0
+  },
+  "hotkeys": {
+    "next_wallpaper": "<Super>Right",
+    "previous_wallpaper": "<Super>Left",
+    "toggle_slideshow": "<Super>s",
+    "open_picker": "<Super>w"
+  }
+}
