@@ -70,8 +70,8 @@ install_gtk_theme() {
     
     if [ ! -d "$THEME_DIR/macos-tahoe-gtk-theme" ]; then
         cd /tmp
-        git clone https://github.com/vinceliuice/macos-tahoe-gtk-theme.git
-        cd macos-tahoe-gtk-theme
+        git clone https://github.com/vinceliuice/MacTahoe-gtk-theme.git
+        cd MacTahoe-gtk-theme
         
         # Install theme
         ./install.sh -d "$THEME_DIR"
@@ -92,8 +92,8 @@ install_icon_theme() {
     
     if [ ! -d "$ICON_DIR/macos-tahoe-icon-theme" ]; then
         cd /tmp
-        git clone https://github.com/vinceliuice/macos-tahoe-icon-theme.git
-        cd macos-tahoe-icon-theme
+        git clone https://github.com/vinceliuice/MacTahoe-icon-theme.git
+        cd MacTahoe-icon-theme
         
         # Install icons
         ./install.sh -d "$ICON_DIR"
@@ -114,8 +114,8 @@ install_cursor_theme() {
     
     if [ ! -d "$ICON_DIR/macOS" ]; then
         cd /tmp
-        git clone https://github.com/vinceliuice/macOS-cursors.git
-        cd macOS-cursors
+        git clone https://github.com/vinceliuice/WhiteSur-cursors.git
+        cd WhiteSur-cursors
         
         # Install cursors
         ./install.sh -d "$ICON_DIR"
@@ -187,20 +187,12 @@ install_additional_fonts() {
 apply_gtk_theme() {
     print_status "Applying GTK theme..."
     
-    # Apply GTK theme using gsettings (GNOME/GTK)
-    if command -v gsettings &> /dev/null; then
-        gsettings set org.gnome.desktop.interface gtk-theme 'macOS-Tahoe' 2>/dev/null || true
-        gsettings set org.gnome.desktop.interface icon-theme 'macOS-Tahoe' 2>/dev/null || true
-        gsettings set org.gnome.desktop.interface cursor-theme 'macOS' 2>/dev/null || true
-        gsettings set org.gnome.desktop.interface font-name 'SF Pro Display 11' 2>/dev/null || true
-        gsettings set org.gnome.desktop.interface monospace-font-name 'SF Mono 11' 2>/dev/null || true
-    fi
+    # Create GTK3 config directory
+    mkdir -p "$CONFIG_DIR/gtk-3.0"
+    mkdir -p "$CONFIG_DIR/gtk-4.0"
     
-    # Apply GTK theme using lxappearance (LXDE/XFCE)
-    if command -v lxappearance &> /dev/null; then
-        # Create lxappearance config
-        mkdir -p "$CONFIG_DIR/gtk-3.0"
-        cat > "$CONFIG_DIR/gtk-3.0/settings.ini" << 'EOF'
+    # Apply GTK3 theme
+    cat > "$CONFIG_DIR/gtk-3.0/settings.ini" << 'EOF'
 [Settings]
 gtk-theme-name=macOS-Tahoe
 gtk-icon-theme-name=macOS-Tahoe
@@ -215,11 +207,22 @@ gtk-xft-antialias=1
 gtk-xft-hinting=1
 gtk-xft-hintstyle=hintfull
 gtk-xft-rgba=rgb
+gtk-application-prefer-dark-theme=0
 EOF
-    fi
+    
+    # Apply GTK4 theme (same settings)
+    cat > "$CONFIG_DIR/gtk-4.0/settings.ini" << 'EOF'
+[Settings]
+gtk-theme-name=macOS-Tahoe
+gtk-icon-theme-name=macOS-Tahoe
+gtk-font-name=SF Pro Display 11
+gtk-cursor-theme-name=macOS
+gtk-cursor-theme-size=24
+gtk-enable-animations=1
+gtk-application-prefer-dark-theme=0
+EOF
     
     # Apply GTK2 theme
-    mkdir -p "$HOME/.gtkrc-2.0"
     cat > "$HOME/.gtkrc-2.0" << 'EOF'
 gtk-theme-name="macOS-Tahoe"
 gtk-icon-theme-name="macOS-Tahoe"
@@ -227,6 +230,21 @@ gtk-font-name="SF Pro Display 11"
 gtk-cursor-theme-name="macOS"
 gtk-cursor-theme-size=24
 EOF
+    
+    # Apply theme using gsettings if available
+    if command -v gsettings &> /dev/null; then
+        gsettings set org.gnome.desktop.interface gtk-theme 'macOS-Tahoe' 2>/dev/null || true
+        gsettings set org.gnome.desktop.interface icon-theme 'macOS-Tahoe' 2>/dev/null || true
+        gsettings set org.gnome.desktop.interface cursor-theme 'macOS' 2>/dev/null || true
+        gsettings set org.gnome.desktop.interface font-name 'SF Pro Display 11' 2>/dev/null || true
+        gsettings set org.gnome.desktop.interface monospace-font-name 'SF Mono 11' 2>/dev/null || true
+        print_status "Applied theme via gsettings"
+    fi
+    
+    # Import GTK2 settings
+    if [ -f "$HOME/.gtkrc-2.0" ]; then
+        export GTK2_RC_FILES="$HOME/.gtkrc-2.0"
+    fi
     
     print_success "GTK theme applied"
 }
