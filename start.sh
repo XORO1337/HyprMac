@@ -131,41 +131,54 @@ install_all_packages() {
     print_status "Installing all required packages for macOS Tahoe..."
     echo
     
+    # Arrays to track failed installations
+    local failed_packages=()
+    local failed_groups=()
+    
     # Update system first
     print_status "Updating system packages..."
-    sudo pacman -Syu --noconfirm
-    
-    print_success "✓ System updated"
+    if ! sudo pacman -Syu --noconfirm 2>/dev/null; then
+        print_warning "System update had some issues, continuing..."
+    fi
+    print_success "✓ System update attempted"
     echo
     
     # Install base dependencies
     print_status "Installing base dependencies..."
-    sudo pacman -S --needed --noconfirm \
-        base-devel git curl wget unzip zip cmake meson ninja gcc pkg-config \
-        || { print_error "Failed to install base dependencies"; return 1; }
-    print_success "✓ Base dependencies installed"
+    if ! sudo pacman -S --needed --noconfirm \
+        base-devel git curl wget unzip zip cmake meson ninja gcc pkg-config 2>/dev/null; then
+        print_warning "Some base dependencies failed"
+        failed_groups+=("base-devel tools")
+    fi
+    print_success "✓ Base dependencies attempted"
     
     # Install Wayland and Hyprland dependencies
     print_status "Installing Wayland and Hyprland dependencies..."
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         wayland wayland-protocols libdrm \
-        libxkbcommon pixman cairo pango gdk-pixbuf2 librsvg glib2 \
-        || { print_error "Failed to install Wayland dependencies"; return 1; }
-    print_success "✓ Wayland dependencies installed"
+        libxkbcommon pixman cairo pango gdk-pixbuf2 librsvg glib2 2>/dev/null; then
+        print_warning "Some Wayland dependencies failed"
+        failed_groups+=("Wayland dependencies")
+    fi
+    print_success "✓ Wayland dependencies attempted"
     
     # Install Hyprland and utilities
     print_status "Installing Hyprland and utilities..."
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         hyprland hyprpaper hyprpicker hyprlock hypridle \
-        slurp wl-clipboard grim \
-        || { print_error "Failed to install Hyprland"; return 1; }
-    print_success "✓ Hyprland installed"
+        slurp wl-clipboard grim 2>/dev/null; then
+        print_warning "Some Hyprland packages failed"
+        failed_groups+=("Hyprland")
+    fi
+    print_success "✓ Hyprland installation attempted"
     
     # Install graphics and rendering (optional GPU drivers)
     print_status "Installing graphics libraries..."
-    sudo pacman -S --needed --noconfirm \
-        mesa libglvnd \
-        || { print_error "Failed to install graphics packages"; return 1; }
+    if ! sudo pacman -S --needed --noconfirm \
+        mesa libglvnd 2>/dev/null; then
+        print_warning "Graphics packages failed"
+        failed_groups+=("Graphics libraries")
+    fi
     
     # Try to install GPU drivers (non-critical)
     print_status "Installing GPU drivers (optional)..."
@@ -173,165 +186,206 @@ install_all_packages() {
         vulkan-radeon vulkan-intel 2>/dev/null || print_warning "Some GPU drivers skipped"
     
     # NVIDIA drivers only if NVIDIA GPU detected
-    if lspci | grep -i nvidia &> /dev/null; then
+    if lspci 2>/dev/null | grep -i nvidia &> /dev/null; then
         print_status "NVIDIA GPU detected, installing drivers..."
         sudo pacman -S --needed --noconfirm nvidia-utils 2>/dev/null || print_warning "NVIDIA drivers skipped"
     fi
     
-    print_success "✓ Graphics packages installed"
+    print_success "✓ Graphics packages attempted"
     
     # Install audio and multimedia
     print_status "Installing audio and multimedia packages..."
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         pipewire pipewire-alsa pipewire-pulse wireplumber pavucontrol alsa-utils \
         ffmpeg ffmpegthumbnailer gst-plugins-base gst-plugins-good \
-        gst-plugins-bad gst-plugins-ugly mpv \
-        || { print_error "Failed to install audio packages"; return 1; }
-    print_success "✓ Audio and multimedia installed"
+        gst-plugins-bad gst-plugins-ugly mpv 2>/dev/null; then
+        print_warning "Some audio packages failed"
+        failed_groups+=("Audio/Multimedia")
+    fi
+    print_success "✓ Audio and multimedia attempted"
+    
     
     # Install fonts
     print_status "Installing fonts..."
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         ttf-dejavu ttf-liberation ttf-roboto ttf-opensans \
         ttf-font-awesome noto-fonts noto-fonts-emoji ttf-fira-code \
         ttf-jetbrains-mono ttf-cascadia-code ttf-hack \
-        adobe-source-code-pro-fonts \
-        || { print_error "Failed to install fonts"; return 1; }
-    print_success "✓ Fonts installed"
+        adobe-source-code-pro-fonts 2>/dev/null; then
+        print_warning "Some fonts failed"
+        failed_groups+=("Fonts")
+    fi
+    print_success "✓ Fonts attempted"
     
     # Install icon themes
     print_status "Installing icon themes..."
-    sudo pacman -S --needed --noconfirm \
-        adwaita-icon-theme hicolor-icon-theme papirus-icon-theme \
-        || { print_error "Failed to install icon themes"; return 1; }
-    print_success "✓ Icon themes installed"
+    if ! sudo pacman -S --needed --noconfirm \
+        adwaita-icon-theme hicolor-icon-theme papirus-icon-theme 2>/dev/null; then
+        print_warning "Some icon themes failed"
+        failed_groups+=("Icon themes")
+    fi
+    print_success "✓ Icon themes attempted"
     
     # Install GTK and theming
     print_status "Installing GTK and theming packages..."
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         gtk3 gtk4 libadwaita \
         sassc optipng inkscape imagemagick librsvg \
         lxappearance papirus-icon-theme \
-        qt5ct qt6ct kvantum \
-        || { print_error "Failed to install GTK packages"; return 1; }
-    print_success "✓ GTK and theming installed"
+        qt5ct qt6ct kvantum 2>/dev/null; then
+        print_warning "Some GTK packages failed"
+        failed_groups+=("GTK/Theming")
+    fi
+    print_success "✓ GTK and theming attempted"
     
     # Install launchers and utilities
     print_status "Installing application launchers and system utilities..."
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         wofi brightnessctl playerctl network-manager-applet \
-        blueman dunst \
-        || { print_error "Failed to install launchers"; return 1; }
+        blueman dunst 2>/dev/null; then
+        print_warning "Some launchers failed"
+        failed_groups+=("Launchers")
+    fi
     
     # Polkit agent
     sudo pacman -S --needed --noconfirm polkit-kde-agent 2>/dev/null || \
         sudo pacman -S --needed --noconfirm polkit-gnome 2>/dev/null || \
         print_warning "No polkit agent installed"
     
-    print_success "✓ Launchers and utilities installed"
+    print_success "✓ Launchers and utilities attempted"
     
     # Install desktop portals
     print_status "Installing desktop portals..."
-    sudo pacman -S --needed --noconfirm \
-        xdg-desktop-portal-hyprland xdg-desktop-portal-gtk \
-        || { print_error "Failed to install desktop portals"; return 1; }
-    print_success "✓ Desktop portals installed"
+    if ! sudo pacman -S --needed --noconfirm \
+        xdg-desktop-portal-hyprland xdg-desktop-portal-gtk 2>/dev/null; then
+        print_warning "Some desktop portals failed"
+        failed_groups+=("Desktop portals")
+    fi
+    print_success "✓ Desktop portals attempted"
     
     # Install file managers
     print_status "Installing file managers..."
-    sudo pacman -S --needed --noconfirm \
+    if ! sudo pacman -S --needed --noconfirm \
         nautilus file-roller \
         gvfs gvfs-mtp gvfs-afc gvfs-gphoto2 gvfs-nfs gvfs-smb \
         thunar thunar-archive-plugin thunar-media-tags-plugin \
-        tumbler \
-        || { print_error "Failed to install file managers"; return 1; }
-    print_success "✓ File managers installed"
+        tumbler 2>/dev/null; then
+        print_warning "Some file manager packages failed"
+        failed_groups+=("File managers")
+    fi
+    print_success "✓ File managers attempted"
     
     # Install terminal emulators
     print_status "Installing terminal emulators..."
-    sudo pacman -S --needed --noconfirm \
-        alacritty kitty foot \
-        || { print_error "Failed to install terminal emulators"; return 1; }
-    print_success "✓ Terminal emulators installed"
+    if ! sudo pacman -S --needed --noconfirm \
+        alacritty kitty foot 2>/dev/null; then
+        print_warning "Some terminal emulators failed"
+        failed_groups+=("Terminal emulators")
+    fi
+    print_success "✓ Terminal emulators attempted"
     
     # Install shell tools
     print_status "Installing shell and development tools..."
     sudo pacman -S --needed --noconfirm \
-        zsh fish starship eza bat fd ripgrep fzf tmux neovim \
-        || { print_warning "Some shell tools may have failed"; }
-    print_success "✓ Shell tools installed"
+        zsh fish starship eza bat fd ripgrep fzf tmux neovim 2>/dev/null || \
+        print_warning "Some shell tools failed"
+    print_success "✓ Shell tools attempted"
     
     # Install system utilities
     print_status "Installing system utilities..."
     sudo pacman -S --needed --noconfirm \
         neofetch htop btop networkmanager nm-connection-editor \
-        bluez bluez-utils openssh feh \
-        || { print_warning "Some utilities may have failed"; }
-    print_success "✓ System utilities installed"
+        bluez bluez-utils openssh feh 2>/dev/null || \
+        print_warning "Some utilities failed"
+    print_success "✓ System utilities attempted"
     
     # Install applications (optional)
     print_status "Installing productivity applications (optional)..."
     sudo pacman -S --needed --noconfirm \
-        firefox gimp \
-        || { print_warning "Some applications may have failed"; }
-    print_success "✓ Applications installed"
+        firefox gimp 2>/dev/null || \
+        print_warning "Some applications skipped"
+    print_success "✓ Applications attempted"
     
     # Install AGS dependencies
     print_status "Installing AGS dependencies..."
-    sudo pacman -S --needed --noconfirm \
-        gobject-introspection vala libgee json-glib libxml2 libsoup3 gstreamer \
-        || { print_error "Failed to install AGS dependencies"; return 1; }
-    print_success "✓ AGS dependencies installed"
+    if ! sudo pacman -S --needed --noconfirm \
+        gobject-introspection vala libgee json-glib libxml2 libsoup3 gstreamer 2>/dev/null; then
+        print_warning "Some AGS dependencies failed"
+        failed_groups+=("AGS dependencies")
+    fi
+    print_success "✓ AGS dependencies attempted"
     
     # Install Python dependencies for wallpaper picker
     print_status "Installing Python dependencies..."
     sudo pacman -S --needed --noconfirm \
-        python python-pip python-gobject python-cairo gtk3 \
-        || { print_warning "Python dependencies may have failed"; }
-    print_success "✓ Python dependencies installed"
+        python python-pip python-gobject python-cairo gtk3 2>/dev/null || \
+        print_warning "Some Python dependencies failed"
+    print_success "✓ Python dependencies attempted"
     
     # Install AUR helper (yay) if not present
     if ! command -v yay &> /dev/null; then
         print_status "Installing AUR helper (yay)..."
-        cd /tmp
-        if [ -d "yay" ]; then
+        (
+            cd /tmp
+            if [ -d "yay" ]; then
+                rm -rf yay
+            fi
+            if git clone https://aur.archlinux.org/yay.git 2>/dev/null && cd yay && makepkg -si --noconfirm 2>/dev/null; then
+                print_success "✓ yay installed"
+            else
+                print_warning "yay installation failed"
+                failed_packages+=("yay")
+            fi
+            cd /tmp
             rm -rf yay
-        fi
-        git clone https://aur.archlinux.org/yay.git
-        cd yay
-        makepkg -si --noconfirm
-        cd /tmp
-        rm -rf yay
-        print_success "✓ yay installed"
+        ) || {
+            print_warning "yay installation failed"
+            failed_packages+=("yay")
+        }
     else
         print_status "AUR helper (yay) already installed"
     fi
     
-    # Install AUR packages
-    print_status "Installing AUR packages (this may take a while)..."
-    echo
+    # Install AUR packages only if yay is available
+    if command -v yay &> /dev/null; then
+        print_status "Installing AUR packages (this may take a while)..."
+        echo
+        
+        # Install swww (wallpaper engine)
+        print_status "Installing swww..."
+        if ! yay -S --needed --noconfirm swww 2>/dev/null; then
+            print_warning "swww installation failed"
+            failed_packages+=("swww")
+        fi
+        
+        # Install grimblast (screenshot utility)
+        print_status "Installing grimblast..."
+        if ! yay -S --needed --noconfirm grimblast-git 2>/dev/null; then
+            print_warning "grimblast installation failed"
+            failed_packages+=("grimblast-git")
+        fi
+        
+        # Install AGS
+        print_status "Installing AGS..."
+        if ! yay -S --needed --noconfirm ags 2>/dev/null; then
+            print_warning "AGS installation failed"
+            failed_packages+=("ags")
+        fi
+        
+        # Install wezterm terminal (optional)
+        print_status "Installing wezterm (optional)..."
+        yay -S --needed --noconfirm wezterm 2>/dev/null || print_warning "wezterm skipped"
+        
+        # Install additional fonts from AUR
+        print_status "Installing additional fonts from AUR..."
+        yay -S --needed --noconfirm ttf-ms-fonts 2>/dev/null || print_warning "MS fonts skipped"
+        
+        print_success "✓ AUR packages installation attempted"
+    else
+        print_warning "Skipping AUR packages (yay not available)"
+        failed_groups+=("AUR packages")
+    fi
     
-    # Install swww (wallpaper engine)
-    print_status "Installing swww..."
-    yay -S --needed --noconfirm swww 2>/dev/null || print_warning "swww installation failed"
-    
-    # Install grimblast (screenshot utility)
-    print_status "Installing grimblast..."
-    yay -S --needed --noconfirm grimblast-git 2>/dev/null || print_warning "grimblast installation failed"
-    
-    # Install AGS
-    print_status "Installing AGS..."
-    yay -S --needed --noconfirm ags 2>/dev/null || print_warning "AGS installation failed"
-    
-    # Install wezterm terminal (optional)
-    print_status "Installing wezterm (optional)..."
-    yay -S --needed --noconfirm wezterm 2>/dev/null || print_warning "wezterm installation skipped"
-    
-    # Install additional fonts from AUR
-    print_status "Installing additional fonts from AUR..."
-    yay -S --needed --noconfirm ttf-ms-fonts 2>/dev/null || print_warning "MS fonts skipped"
-    
-    print_success "✓ AUR packages installed"
     
     # Enable and start services
     print_status "Enabling system services..."
@@ -349,11 +403,40 @@ install_all_packages() {
     
     # Update font cache
     print_status "Updating font cache..."
-    fc-cache -fv > /dev/null 2>&1
+    fc-cache -fv > /dev/null 2>&1 || print_warning "Font cache update failed"
     print_success "✓ Font cache updated"
     
     echo
-    print_success "✓✓✓ All packages installed successfully! ✓✓✓"
+    echo "═══════════════════════════════════════════════════════════════"
+    
+    # Display summary
+    if [ ${#failed_packages[@]} -eq 0 ] && [ ${#failed_groups[@]} -eq 0 ]; then
+        print_success "✓✓✓ All packages installed successfully! ✓✓✓"
+    else
+        print_warning "Installation completed with some issues:"
+        echo
+        
+        if [ ${#failed_groups[@]} -gt 0 ]; then
+            echo -e "${YELLOW}Package groups with issues:${NC}"
+            for group in "${failed_groups[@]}"; do
+                echo -e "  ${RED}✗${NC} $group"
+            done
+            echo
+        fi
+        
+        if [ ${#failed_packages[@]} -gt 0 ]; then
+            echo -e "${YELLOW}Individual packages that failed:${NC}"
+            for pkg in "${failed_packages[@]}"; do
+                echo -e "  ${RED}✗${NC} $pkg"
+            done
+            echo
+        fi
+        
+        echo -e "${YELLOW}Note: You can try installing failed packages manually later.${NC}"
+        echo -e "${YELLOW}Most packages are optional and the system should still work.${NC}"
+    fi
+    
+    echo "═══════════════════════════════════════════════════════════════"
 }
 
 # Function for complete installation
