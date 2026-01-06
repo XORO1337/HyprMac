@@ -1,0 +1,5 @@
+{
+    "weather_mode": "detailed",
+    "coords": "37.7749,-122.4194",  // Fallback if IP fails; format "lat,lon"
+    "city": ""  // Optional: Set to geocode if coords not set
+}
