@@ -1,0 +1,551 @@
+/* HyprMac - macOS-style AGS Theme */
+
+/* ============================================
+   Global Variables & Fonts
+   ============================================ */
+* {
+    all: unset;
+    font-family: "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
+    font-size: 13px;
+}
+
+/* ============================================
+   Top Menu Bar
+   ============================================ */
+.bar {
+    background: transparent;
+}
+
+.bar-container {
+    background: alpha(#1e1e2e, 0.85);
+    backdrop-filter: blur(30px);
+    border-radius: 0;
+    padding: 0 12px;
+    min-height: 28px;
+}
+
+.bar-left,
+.bar-center,
+.bar-right {
+    spacing: 12px;
+}
+
+/* Apple Menu */
+.apple-menu {
+    font-size: 16px;
+    padding: 0 8px;
+    color: #cdd6f4;
+}
+
+.apple-menu:hover {
+    background: alpha(#ffffff, 0.1);
+    border-radius: 4px;
+}
+
+/* Active App Name */
+.active-app {
+    font-weight: 600;
+    color: #cdd6f4;
+}
+
+/* Workspaces */
+.workspaces {
+    spacing: 4px;
+}
+
+.workspace-btn {
+    min-width: 24px;
+    min-height: 20px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: #a6adc8;
+    background: transparent;
+}
+
+.workspace-btn:hover {
+    background: alpha(#ffffff, 0.1);
+}
+
+.workspace-btn.active {
+    background: alpha(#89b4fa, 0.3);
+    color: #89b4fa;
+    font-weight: 600;
+}
+
+/* Clock */
+.clock {
+    color: #cdd6f4;
+    padding: 0 8px;
+}
+
+/* System Indicators */
+.battery,
+.volume,
+.wifi,
+.bluetooth,
+.control-center-btn {
+    color: #cdd6f4;
+    padding: 0 4px;
+}
+
+.volume:hover,
+.control-center-btn:hover {
+    background: alpha(#ffffff, 0.1);
+    border-radius: 4px;
+}
+
+/* System Tray */
+.systray {
+    spacing: 8px;
+}
+
+/* ============================================
+   Dock
+   ============================================ */
+.dock-window {
+    background: transparent;
+    padding-bottom: 8px;
+}
+
+.dock {
+    background: alpha(#1e1e2e, 0.75);
+    backdrop-filter: blur(30px);
+    border-radius: 16px;
+    padding: 4px 8px;
+    margin: 0 auto;
+    border: 1px solid alpha(#ffffff, 0.1);
+}
+
+.dock-items {
+    spacing: 2px;
+}
+
+.dock-item {
+    padding: 4px 6px;
+    border-radius: 12px;
+    transition: all 200ms ease;
+}
+
+.dock-item:hover,
+.dock-item.hovered {
+    background: alpha(#ffffff, 0.1);
+    transform: scale(1.2);
+    margin-top: -8px;
+}
+
+.dock-item-box {
+    spacing: 2px;
+}
+
+/* Running indicator dot */
+.dock-indicator {
+    min-width: 4px;
+    min-height: 4px;
+    border-radius: 50%;
+    background: transparent;
+}
+
+.dock-indicator.running {
+    background: #89b4fa;
+}
+
+/* Dock separator */
+.dock-separator {
+    background: alpha(#ffffff, 0.2);
+    min-width: 1px;
+    margin: 8px 8px;
+}
+
+/* Trash */
+.dock-trash {
+    opacity: 0.7;
+}
+
+.dock-trash:hover {
+    opacity: 1;
+}
+
+/* ============================================
+   Control Center
+   ============================================ */
+.control-center-window {
+    background: transparent;
+    margin: 8px;
+}
+
+.control-center {
+    background: alpha(#1e1e2e, 0.9);
+    backdrop-filter: blur(30px);
+    border-radius: 12px;
+    padding: 16px;
+    min-width: 320px;
+    border: 1px solid alpha(#ffffff, 0.1);
+    spacing: 12px;
+}
+
+.cc-header {
+    margin-bottom: 8px;
+}
+
+.cc-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #cdd6f4;
+}
+
+.cc-close {
+    color: #a6adc8;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.cc-close:hover {
+    background: alpha(#f38ba8, 0.2);
+    color: #f38ba8;
+}
+
+/* Toggle Buttons Grid */
+.cc-toggles {
+    spacing: 8px;
+}
+
+.cc-toggle {
+    background: alpha(#313244, 0.8);
+    border-radius: 12px;
+    padding: 12px;
+    min-width: 70px;
+    min-height: 60px;
+    color: #a6adc8;
+}
+
+.cc-toggle:hover {
+    background: alpha(#45475a, 0.8);
+}
+
+.cc-toggle.active {
+    background: #89b4fa;
+    color: #1e1e2e;
+}
+
+.toggle-label {
+    font-size: 11px;
+    margin-top: 6px;
+}
+
+/* Sliders */
+.cc-sliders {
+    spacing: 8px;
+}
+
+.cc-section-label {
+    color: #a6adc8;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 8px;
+}
+
+.cc-slider-box {
+    background: alpha(#313244, 0.8);
+    border-radius: 12px;
+    padding: 12px;
+    spacing: 12px;
+}
+
+.cc-slider {
+    min-width: 200px;
+}
+
+.cc-slider trough {
+    background: alpha(#45475a, 0.8);
+    border-radius: 8px;
+    min-height: 6px;
+}
+
+.cc-slider highlight {
+    background: #89b4fa;
+    border-radius: 8px;
+}
+
+.cc-slider slider {
+    background: #cdd6f4;
+    border-radius: 50%;
+    min-width: 16px;
+    min-height: 16px;
+    margin: -5px;
+}
+
+/* Media Player */
+.cc-media {
+    background: alpha(#313244, 0.8);
+    border-radius: 12px;
+    padding: 12px;
+    spacing: 8px;
+}
+
+.media-info {
+    spacing: 12px;
+}
+
+.media-cover {
+    min-width: 48px;
+    min-height: 48px;
+    border-radius: 8px;
+    background: alpha(#45475a, 0.8);
+    background-size: cover;
+    background-position: center;
+}
+
+.media-title {
+    font-weight: 600;
+    color: #cdd6f4;
+}
+
+.media-artist {
+    color: #a6adc8;
+    font-size: 12px;
+}
+
+.media-controls {
+    spacing: 16px;
+    margin-top: 8px;
+}
+
+.media-controls button {
+    padding: 8px;
+    border-radius: 50%;
+    color: #cdd6f4;
+}
+
+.media-controls button:hover {
+    background: alpha(#ffffff, 0.1);
+}
+
+/* ============================================
+   Launcher (Spotlight)
+   ============================================ */
+.launcher-window {
+    background: transparent;
+    margin-top: 100px;
+}
+
+.launcher {
+    background: alpha(#1e1e2e, 0.95);
+    backdrop-filter: blur(30px);
+    border-radius: 12px;
+    min-width: 600px;
+    border: 1px solid alpha(#ffffff, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.launcher-header {
+    padding: 12px 16px;
+    spacing: 12px;
+    border-bottom: 1px solid alpha(#ffffff, 0.1);
+}
+
+.launcher-header icon {
+    color: #a6adc8;
+}
+
+.launcher-search {
+    font-size: 18px;
+    color: #cdd6f4;
+    background: transparent;
+    caret-color: #89b4fa;
+}
+
+.launcher-search:focus {
+    outline: none;
+}
+
+.launcher-results {
+    max-height: 400px;
+}
+
+.launcher-item {
+    padding: 8px 16px;
+    spacing: 12px;
+}
+
+.launcher-item:hover {
+    background: alpha(#89b4fa, 0.2);
+}
+
+.launcher-item:first-child {
+    background: alpha(#89b4fa, 0.3);
+}
+
+.launcher-item icon {
+    margin-right: 8px;
+}
+
+.launcher-item-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #cdd6f4;
+}
+
+.launcher-item-desc {
+    font-size: 11px;
+    color: #a6adc8;
+}
+
+/* ============================================
+   Notifications
+   ============================================ */
+.notification-popups {
+    background: transparent;
+    margin: 8px;
+}
+
+.notification-list {
+    spacing: 8px;
+}
+
+.notification {
+    background: alpha(#1e1e2e, 0.95);
+    backdrop-filter: blur(30px);
+    border-radius: 12px;
+    padding: 12px;
+    spacing: 12px;
+    border: 1px solid alpha(#ffffff, 0.1);
+    min-width: 350px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.notification.critical {
+    border: 1px solid alpha(#f38ba8, 0.5);
+}
+
+.notification-icon {
+    min-width: 48px;
+    min-height: 48px;
+}
+
+.notification-title {
+    font-weight: 600;
+    color: #cdd6f4;
+}
+
+.notification-app {
+    color: #a6adc8;
+    font-size: 11px;
+}
+
+.notification-body {
+    color: #bac2de;
+    font-size: 12px;
+}
+
+.notification-close {
+    color: #a6adc8;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.notification-close:hover {
+    background: alpha(#f38ba8, 0.2);
+    color: #f38ba8;
+}
+
+.notification-actions {
+    spacing: 8px;
+    margin-top: 8px;
+}
+
+.notification-action {
+    background: alpha(#89b4fa, 0.2);
+    color: #89b4fa;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.notification-action:hover {
+    background: alpha(#89b4fa, 0.3);
+}
+
+/* ============================================
+   OSD (On Screen Display)
+   ============================================ */
+.osd-window {
+    background: transparent;
+    margin-bottom: 100px;
+}
+
+.osd {
+    background: alpha(#1e1e2e, 0.9);
+    backdrop-filter: blur(30px);
+    border-radius: 16px;
+    padding: 20px 30px;
+    spacing: 16px;
+    border: 1px solid alpha(#ffffff, 0.1);
+}
+
+.osd-icon {
+    color: #cdd6f4;
+}
+
+.osd-progress levelbar {
+    min-height: 8px;
+}
+
+.osd-progress levelbar trough {
+    background: alpha(#45475a, 0.8);
+    border-radius: 8px;
+}
+
+.osd-progress levelbar block.filled {
+    background: #89b4fa;
+    border-radius: 8px;
+}
+
+/* ============================================
+   Scrollbars
+   ============================================ */
+scrollbar {
+    background: transparent;
+}
+
+scrollbar slider {
+    background: alpha(#cdd6f4, 0.3);
+    border-radius: 8px;
+    min-width: 6px;
+    min-height: 6px;
+}
+
+scrollbar slider:hover {
+    background: alpha(#cdd6f4, 0.5);
+}
+
+/* ============================================
+   Menus
+   ============================================ */
+menu {
+    background: alpha(#1e1e2e, 0.95);
+    border-radius: 8px;
+    padding: 4px;
+    border: 1px solid alpha(#ffffff, 0.1);
+}
+
+menuitem {
+    padding: 6px 12px;
+    border-radius: 4px;
+    color: #cdd6f4;
+}
+
+menuitem:hover {
+    background: alpha(#89b4fa, 0.2);
+}
+
+/* ============================================
+   Tooltips
+   ============================================ */
+tooltip {
+    background: alpha(#1e1e2e, 0.95);
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: #cdd6f4;
+    border: 1px solid alpha(#ffffff, 0.1);
+}
