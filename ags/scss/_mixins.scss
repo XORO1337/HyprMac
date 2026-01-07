@@ -1,0 +1,152 @@
+// HyprMac SCSS Mixins
+// Reusable style patterns
+
+@use 'variables' as *;
+
+// ============================================
+// Base Mixins
+// ============================================
+
+@mixin reset {
+    all: unset;
+    font-family: $font-family;
+    font-size: $font-size-md;
+}
+
+@mixin glass-bg($opacity: 0.85) {
+    background: alpha($bg-primary, $opacity);
+    // Note: backdrop-filter may not work in GTK, but we include it for future support
+}
+
+// Frosted glass surface - macOS style
+// GTK uses alpha() for transparency, blur is handled by Hyprland layer rules
+@mixin glass-surface($opacity: 0.75) {
+    background: alpha($bg-primary, $opacity);
+    border: 1px solid alpha($text, 0.1);
+    box-shadow: $shadow-lg;
+}
+
+@mixin glass-surface-light($opacity: 0.8) {
+    background: alpha(white, $opacity);
+    border: 1px solid alpha(black, 0.1);
+    box-shadow: $shadow-lg;
+}
+
+@mixin hover-bg {
+    &:hover {
+        background: $bg-hover;
+        border-radius: $border-radius-sm;
+    }
+}
+
+@mixin active-state {
+    background: $bg-active;
+    color: $accent;
+}
+
+// ============================================
+// Component Mixins
+// ============================================
+
+@mixin button-reset {
+    @include reset;
+    padding: $spacing-sm;
+    border-radius: $border-radius-sm;
+    color: $text-primary;
+    transition: background $transition-fast;
+    
+    &:hover {
+        background: $bg-hover;
+    }
+    
+    &:active {
+        background: alpha($text, 0.15);
+    }
+}
+
+@mixin toggle-button {
+    @include button-reset;
+    padding: $spacing-md;
+    border-radius: $border-radius-md;
+    background: $bg-secondary;
+    
+    &.active {
+        background: $accent;
+        color: $crust;
+    }
+}
+
+@mixin slider {
+    trough {
+        min-height: 4px;
+        border-radius: 2px;
+        background: $surface1;
+        
+        highlight {
+            background: $accent;
+            border-radius: 2px;
+        }
+    }
+    
+    slider {
+        min-width: 16px;
+        min-height: 16px;
+        border-radius: 50%;
+        background: $text;
+        box-shadow: $shadow-sm;
+    }
+}
+
+@mixin card {
+    background: $bg-secondary;
+    border-radius: $border-radius-lg;
+    padding: $spacing-md;
+}
+
+// ============================================
+// Layout Mixins
+// ============================================
+
+@mixin flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@mixin flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+// ============================================
+// Animation Mixins
+// ============================================
+
+@mixin dock-bounce {
+    transition: margin $transition-normal;
+    
+    &.hovered {
+        margin-top: -8px;
+    }
+}
+
+@mixin fade-in {
+    animation: fadeIn $transition-normal;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        margin-top: -10px;
+    }
+    to {
+        opacity: 1;
+        margin-top: 0;
+    }
+}

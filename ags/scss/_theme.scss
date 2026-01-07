@@ -1,0 +1,514 @@
+// HyprMac Theme Styles
+// Dark and Light mode variations with blur/transparency preserved
+
+@use 'variables' as *;
+
+// ============================================
+// Light Theme Color Overrides
+// Catppuccin Latte palette
+// ============================================
+
+// Light theme colors (Catppuccin Latte)
+$light-rosewater: #dc8a78;
+$light-flamingo: #dd7878;
+$light-pink: #ea76cb;
+$light-mauve: #8839ef;
+$light-red: #d20f39;
+$light-maroon: #e64553;
+$light-peach: #fe640b;
+$light-yellow: #df8e1d;
+$light-green: #40a02b;
+$light-teal: #179299;
+$light-sky: #04a5e5;
+$light-sapphire: #209fb5;
+$light-blue: #1e66f5;
+$light-lavender: #7287fd;
+
+$light-text: #4c4f69;
+$light-subtext1: #5c5f77;
+$light-subtext0: #6c6f85;
+$light-overlay2: #7c7f93;
+$light-overlay1: #8c8fa1;
+$light-overlay0: #9ca0b0;
+$light-surface2: #acb0be;
+$light-surface1: #bcc0cc;
+$light-surface0: #ccd0da;
+$light-base: #eff1f5;
+$light-mantle: #e6e9ef;
+$light-crust: #dce0e8;
+
+// ============================================
+// Dark Theme (Default) - Applied via .dark class
+// ============================================
+.dark {
+    // Bar
+    .bar-container {
+        background: alpha($base, 0.85);
+    }
+    
+    .apple-menu,
+    .active-app,
+    .clock,
+    .battery,
+    .volume,
+    .wifi,
+    .bluetooth {
+        color: $text;
+    }
+    
+    .workspace-btn {
+        color: $subtext0;
+        
+        &.active {
+            background: alpha($blue, 0.3);
+            color: $blue;
+        }
+    }
+    
+    // Dock
+    .dock {
+        background: alpha($base, 0.8);
+    }
+    
+    .dock-indicator.running {
+        background: $subtext0;
+    }
+    
+    .dock-separator {
+        background: $overlay0;
+    }
+    
+    // Control Center
+    .control-center {
+        background: alpha($base, 0.9);
+    }
+    
+    .cc-title {
+        color: $text;
+    }
+    
+    .cc-toggle {
+        background: $surface0;
+        
+        .toggle-label {
+            color: $subtext0;
+        }
+        
+        &.active {
+            background: $blue;
+            
+            .toggle-label {
+                color: $crust;
+            }
+        }
+    }
+    
+    .cc-section-label {
+        color: $subtext0;
+    }
+    
+    .cc-sliders,
+    .cc-performance,
+    .cc-media {
+        background: $surface0;
+    }
+    
+    .cc-slider {
+        trough {
+            background: $surface1;
+            
+            highlight {
+                background: $blue;
+            }
+        }
+        
+        slider {
+            background: $text;
+        }
+    }
+    
+    .cc-perf-btn {
+        background: $surface1;
+        
+        .perf-label {
+            color: $subtext0;
+        }
+        
+        &:hover {
+            background: $surface2;
+        }
+        
+        &.active {
+            background: $blue;
+            
+            .perf-label {
+                color: $crust;
+            }
+        }
+    }
+    
+    .media-title {
+        color: $text;
+    }
+    
+    .media-artist {
+        color: $subtext0;
+    }
+    
+    .media-cover {
+        background-color: $surface1;
+    }
+    
+    // Launcher
+    .launcher {
+        background: alpha($base, 0.95);
+    }
+    
+    .launcher-search {
+        background: $surface0;
+        color: $text;
+    }
+    
+    .launcher-item-name {
+        color: $text;
+    }
+    
+    .launcher-item-desc {
+        color: $subtext0;
+    }
+    
+    .launcher-item:focus {
+        background: $blue;
+        
+        .launcher-item-name {
+            color: $crust;
+        }
+        
+        .launcher-item-desc {
+            color: alpha($crust, 0.7);
+        }
+    }
+    
+    // Notifications
+    .notification {
+        background: alpha($base, 0.95);
+    }
+    
+    .notification-title {
+        color: $text;
+    }
+    
+    .notification-body {
+        color: $subtext0;
+    }
+    
+    .notification-app {
+        color: $overlay1;
+    }
+    
+    // OSD
+    .osd {
+        background: alpha($base, 0.9);
+    }
+    
+    .osd-icon {
+        color: $text;
+    }
+}
+
+// ============================================
+// Light Theme - Applied via .light class
+// ============================================
+.light {
+    // Bar
+    .bar-container {
+        background: alpha($light-base, 0.85);
+    }
+    
+    .apple-menu,
+    .active-app,
+    .clock,
+    .battery,
+    .volume,
+    .wifi,
+    .bluetooth,
+    .control-center-btn {
+        color: $light-text;
+    }
+    
+    .workspace-btn {
+        color: $light-subtext0;
+        
+        &:hover {
+            background: alpha($light-text, 0.1);
+        }
+        
+        &.active {
+            background: alpha($light-blue, 0.3);
+            color: $light-blue;
+        }
+    }
+    
+    .systray button {
+        &:hover {
+            background: alpha($light-text, 0.1);
+        }
+    }
+    
+    // Dock
+    .dock {
+        background: alpha($light-base, 0.85);
+        box-shadow: 0 8px 24px alpha(black, 0.15);
+    }
+    
+    .dock-item:hover {
+        background: alpha($light-text, 0.1);
+    }
+    
+    .dock-indicator.running {
+        background: $light-subtext0;
+    }
+    
+    .dock-separator {
+        background: $light-overlay0;
+    }
+    
+    // Control Center
+    .control-center {
+        background: alpha($light-base, 0.92);
+        box-shadow: 0 8px 24px alpha(black, 0.15);
+    }
+    
+    .cc-title {
+        color: $light-text;
+    }
+    
+    .cc-close {
+        color: $light-subtext0;
+        
+        &:hover {
+            color: $light-text;
+        }
+    }
+    
+    .cc-toggle {
+        background: $light-surface0;
+        
+        icon {
+            color: $light-text;
+        }
+        
+        .toggle-label {
+            color: $light-subtext0;
+        }
+        
+        &:hover {
+            background: $light-surface1;
+        }
+        
+        &.active {
+            background: $light-blue;
+            
+            icon {
+                color: white;
+            }
+            
+            .toggle-label {
+                color: white;
+            }
+        }
+    }
+    
+    // Theme toggle special styling for light mode
+    .cc-theme-toggle.light-mode {
+        background: $light-yellow;
+        
+        icon {
+            color: white;
+        }
+        
+        .toggle-label {
+            color: white;
+        }
+    }
+    
+    .cc-section-label {
+        color: $light-subtext0;
+    }
+    
+    .cc-sliders,
+    .cc-performance,
+    .cc-media {
+        background: $light-surface0;
+    }
+    
+    .cc-slider-box {
+        icon, button icon {
+            color: $light-text;
+        }
+    }
+    
+    .cc-slider {
+        trough {
+            background: $light-surface1;
+            
+            highlight {
+                background: $light-blue;
+            }
+        }
+        
+        slider {
+            background: white;
+            box-shadow: 0 1px 3px alpha(black, 0.2);
+        }
+    }
+    
+    .cc-perf-btn {
+        background: $light-surface1;
+        
+        icon {
+            color: $light-text;
+        }
+        
+        .perf-label {
+            color: $light-subtext0;
+        }
+        
+        &:hover {
+            background: $light-surface2;
+        }
+        
+        &.active {
+            background: $light-blue;
+            
+            icon {
+                color: white;
+            }
+            
+            .perf-label {
+                color: white;
+            }
+        }
+    }
+    
+    .media-title {
+        color: $light-text;
+    }
+    
+    .media-artist {
+        color: $light-subtext0;
+    }
+    
+    .media-cover {
+        background-color: $light-surface1;
+    }
+    
+    .media-controls button {
+        color: $light-text;
+        
+        &:hover {
+            background: alpha($light-text, 0.1);
+        }
+    }
+    
+    // Launcher
+    .launcher {
+        background: alpha($light-base, 0.95);
+        box-shadow: 0 10px 40px alpha(black, 0.2);
+    }
+    
+    .launcher-header icon {
+        color: $light-subtext0;
+    }
+    
+    .launcher-search {
+        background: $light-surface0;
+        color: $light-text;
+        
+        &:focus {
+            background: $light-surface1;
+        }
+    }
+    
+    .launcher-item {
+        &:hover {
+            background: alpha($light-text, 0.08);
+        }
+    }
+    
+    .launcher-item-name {
+        color: $light-text;
+    }
+    
+    .launcher-item-desc {
+        color: $light-subtext0;
+    }
+    
+    .launcher-item:focus {
+        background: $light-blue;
+        
+        .launcher-item-name {
+            color: white;
+        }
+        
+        .launcher-item-desc {
+            color: alpha(white, 0.8);
+        }
+    }
+    
+    // Notifications
+    .notification {
+        background: alpha($light-base, 0.95);
+        box-shadow: 0 4px 12px alpha(black, 0.15);
+    }
+    
+    .notification-title {
+        color: $light-text;
+    }
+    
+    .notification-body {
+        color: $light-subtext0;
+    }
+    
+    .notification-app {
+        color: $light-overlay1;
+    }
+    
+    .notification-close {
+        color: $light-overlay1;
+        
+        &:hover {
+            color: $light-text;
+        }
+    }
+    
+    .notification-action {
+        background: $light-surface0;
+        color: $light-text;
+        
+        &:hover {
+            background: $light-blue;
+            color: white;
+        }
+    }
+    
+    // OSD
+    .osd {
+        background: alpha($light-base, 0.92);
+        box-shadow: 0 8px 24px alpha(black, 0.15);
+    }
+    
+    .osd-icon {
+        color: $light-text;
+    }
+    
+    .osd-progress levelbar {
+        trough {
+            background: $light-surface1;
+            
+            block.filled {
+                background: $light-blue;
+            }
+        }
+    }
+}

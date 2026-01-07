@@ -1,0 +1,82 @@
+// HyprMac - Launcher (Spotlight) Styles
+
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.launcher-window {
+    background: transparent;
+}
+
+.launcher {
+    @include glass-bg(0.9);
+    border-radius: $border-radius-lg;
+    padding: $spacing-md;
+    margin-top: 100px;
+    min-width: 600px;
+    max-width: 600px;
+    box-shadow: $shadow-lg;
+    spacing: $spacing-sm;
+}
+
+// Search Input
+.launcher-search {
+    font-size: $font-size-xl;
+    padding: $spacing-md $spacing-lg;
+    border-radius: $border-radius-md;
+    background: $bg-secondary;
+    color: $text-primary;
+    caret-color: $accent;
+    
+    &:focus {
+        background: $bg-tertiary;
+    }
+    
+    // Placeholder text
+    placeholder {
+        color: $text-muted;
+    }
+}
+
+// Results Scrollable Container
+.launcher-results {
+    min-height: 200px;
+    max-height: 400px;
+}
+
+// Individual App Item
+.launcher-item {
+    padding: $spacing-sm $spacing-md;
+    border-radius: $border-radius-md;
+    margin: 2px 0;
+    
+    &:hover {
+        background: $bg-hover;
+    }
+    
+    &:focus {
+        background: $accent;
+        
+        .launcher-item-name {
+            color: $crust;
+        }
+        
+        .launcher-item-desc {
+            color: alpha($crust, 0.7);
+        }
+    }
+    
+    box {
+        spacing: $spacing-md;
+    }
+}
+
+.launcher-item-name {
+    font-size: $font-size-md;
+    font-weight: 500;
+    color: $text-primary;
+}
+
+.launcher-item-desc {
+    font-size: $font-size-sm;
+    color: $text-secondary;
+}

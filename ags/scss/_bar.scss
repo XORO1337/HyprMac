@@ -1,0 +1,94 @@
+// HyprMac - Top Menu Bar Styles
+
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.bar {
+    background: transparent;
+}
+
+.bar-container {
+    @include glass-bg(0.85);
+    border-radius: 0;
+    padding: 0 $spacing-md;
+    min-height: $bar-height;
+}
+
+.bar-left,
+.bar-center,
+.bar-right {
+    spacing: $spacing-md;
+}
+
+// Apple Menu Button
+.apple-menu {
+    font-size: 16px;
+    padding: 0 $spacing-sm;
+    color: $text-primary;
+    
+    @include hover-bg;
+}
+
+// Active Application Name
+.active-app {
+    font-weight: 600;
+    color: $text-primary;
+}
+
+// Workspace Buttons
+.workspaces {
+    spacing: $spacing-xs;
+}
+
+.workspace-btn {
+    min-width: 24px;
+    min-height: 20px;
+    padding: 2px $spacing-sm;
+    border-radius: $border-radius-sm;
+    color: $text-secondary;
+    background: transparent;
+    
+    &:hover {
+        background: $bg-hover;
+    }
+    
+    &.active {
+        @include active-state;
+        font-weight: 600;
+    }
+}
+
+// Clock Display
+.clock {
+    color: $text-primary;
+    padding: 0 $spacing-sm;
+}
+
+// System Indicators
+.battery,
+.volume,
+.wifi,
+.bluetooth,
+.control-center-btn {
+    color: $text-primary;
+    padding: 0 $spacing-xs;
+}
+
+.volume,
+.control-center-btn {
+    @include hover-bg;
+}
+
+// System Tray
+.systray {
+    spacing: $spacing-sm;
+    
+    button {
+        padding: $spacing-xs;
+        border-radius: $border-radius-sm;
+        
+        &:hover {
+            background: $bg-hover;
+        }
+    }
+}

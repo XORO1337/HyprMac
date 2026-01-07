@@ -7,6 +7,14 @@ import Bluetooth from 'resource:///com/github/Aylur/ags/service/bluetooth.js';
 import Mpris from 'resource:///com/github/Aylur/ags/service/mpris.js';
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 
+// Custom services
+import Brightness from '../services/brightness.js';
+import NightShift from '../services/nightshift.js';
+import DND from '../services/dnd.js';
+import PerformanceMode, { Modes as PerfModes } from '../services/performance.js';
+import Theme from '../services/theme.js';
+import WallpaperColors from '../services/wallpaper-colors.js';
+
 // Header
 const Header = () => Widget.Box({
     className: 'cc-header',
@@ -93,14 +101,12 @@ const BluetoothToggle = () => Widget.Button({
 });
 
 // Do Not Disturb Toggle
-let dndEnabled = false;
 const DNDToggle = () => Widget.Button({
     className: 'cc-toggle',
-    onClicked: (self) => {
-        dndEnabled = !dndEnabled;
-        self.toggleClassName('active', dndEnabled);
-        Utils.execAsync(`swaync-client ${dndEnabled ? '-d' : '-D'}`);
-    },
+    setup: self => self.hook(DND, () => {
+        self.toggleClassName('active', DND.enabled);
+    }),
+    onClicked: () => DND.toggle(),
     child: Widget.Box({
         vertical: true,
         children: [
@@ -111,18 +117,12 @@ const DNDToggle = () => Widget.Button({
 });
 
 // Night Shift Toggle
-let nightShiftEnabled = false;
 const NightShiftToggle = () => Widget.Button({
     className: 'cc-toggle',
-    onClicked: (self) => {
-        nightShiftEnabled = !nightShiftEnabled;
-        self.toggleClassName('active', nightShiftEnabled);
-        if (nightShiftEnabled) {
-            Utils.execAsync('gammastep -O 4500');
-        } else {
-            Utils.execAsync('pkill gammastep');
-        }
-    },
+    setup: self => self.hook(NightShift, () => {
+        self.toggleClassName('active', NightShift.enabled);
+    }),
+    onClicked: () => NightShift.toggle(),
     child: Widget.Box({
         vertical: true,
         children: [
@@ -132,15 +132,158 @@ const NightShiftToggle = () => Widget.Button({
     }),
 });
 
+// Theme Toggle (Dark/Light Mode)
+const ThemeToggle = () => Widget.Button({
+    className: 'cc-toggle cc-theme-toggle',
+    setup: self => self.hook(Theme, () => {
+        self.toggleClassName('active', Theme.isDark);
+        self.toggleClassName('light-mode', !Theme.isDark);
+    }),
+    onClicked: () => Theme.toggle(),
+    child: Widget.Box({
+        vertical: true,
+        children: [
+            Widget.Icon({
+                setup: self => self.hook(Theme, () => {
+                    self.icon = Theme.isDark ? 'weather-clear-night-symbolic' : 'weather-clear-symbolic';
+                }),
+                size: 24,
+            }),
+            Widget.Label({
+                className: 'toggle-label',
+                setup: self => self.hook(Theme, () => {
+                    self.label = Theme.isDark ? 'Dark' : 'Light';
+                }),
+            }),
+        ],
+    }),
+});
+
+// Dynamic Colors Toggle (Wallpaper-based colors)
+const DynamicColorsToggle = () => Widget.Button({
+    className: 'cc-toggle cc-dynamic-toggle',
+    setup: self => self.hook(WallpaperColors, () => {
+        self.toggleClassName('active', WallpaperColors.dynamicEnabled);
+    }),
+    onClicked: () => WallpaperColors.toggleDynamic(),
+    child: Widget.Box({
+        vertical: true,
+        children: [
+            Widget.Icon({ icon: 'preferences-color-symbolic', size: 24 }),
+            Widget.Label({ label: 'Colors', className: 'toggle-label' }),
+        ],
+    }),
+});
+
+// Wallpaper Picker Button
+const WallpaperButton = () => Widget.Button({
+    className: 'cc-toggle cc-wallpaper-toggle',
+    onClicked: () => {
+        App.closeWindow('control-center');
+        App.openWindow('wallpaper-picker');
+    },
+    child: Widget.Box({
+        vertical: true,
+        children: [
+            Widget.Icon({ icon: 'preferences-desktop-wallpaper-symbolic', size: 24 }),
+            Widget.Label({ label: 'Wallpaper', className: 'toggle-label' }),
+        ],
+    }),
+});
+
+// Performance Mode Selector
+const PerformanceModeSelector = () => Widget.Box({
+    className: 'cc-performance',
+    vertical: true,
+    setup: self => self.hook(PerformanceMode, () => {
+        self.visible = PerformanceMode.available;
+    }),
+    children: [
+        Widget.Label({
+            label: 'Performance',
+            xalign: 0,
+            className: 'cc-section-label',
+        }),
+        Widget.Box({
+            className: 'cc-performance-modes',
+            homogeneous: true,
+            children: [
+                // Power Saving
+                Widget.Button({
+                    className: 'cc-perf-btn',
+                    setup: self => self.hook(PerformanceMode, () => {
+                        self.toggleClassName('active', PerformanceMode.mode === PerfModes.POWER_SAVING);
+                    }),
+                    onClicked: () => PerformanceMode.mode = PerfModes.POWER_SAVING,
+                    child: Widget.Box({
+                        vertical: true,
+                        children: [
+                            Widget.Icon({ icon: 'battery-level-20-symbolic', size: 20 }),
+                            Widget.Label({ label: 'Low', className: 'perf-label' }),
+                        ],
+                    }),
+                }),
+                // Balanced
+                Widget.Button({
+                    className: 'cc-perf-btn',
+                    setup: self => self.hook(PerformanceMode, () => {
+                        self.toggleClassName('active', PerformanceMode.mode === PerfModes.BALANCED);
+                    }),
+                    onClicked: () => PerformanceMode.mode = PerfModes.BALANCED,
+                    child: Widget.Box({
+                        vertical: true,
+                        children: [
+                            Widget.Icon({ icon: 'battery-level-50-symbolic', size: 20 }),
+                            Widget.Label({ label: 'Auto', className: 'perf-label' }),
+                        ],
+                    }),
+                }),
+                // Performance
+                Widget.Button({
+                    className: 'cc-perf-btn',
+                    setup: self => self.hook(PerformanceMode, () => {
+                        self.toggleClassName('active', PerformanceMode.mode === PerfModes.PERFORMANCE);
+                    }),
+                    onClicked: () => PerformanceMode.mode = PerfModes.PERFORMANCE,
+                    child: Widget.Box({
+                        vertical: true,
+                        children: [
+                            Widget.Icon({ icon: 'battery-level-100-charging-symbolic', size: 20 }),
+                            Widget.Label({ label: 'High', className: 'perf-label' }),
+                        ],
+                    }),
+                }),
+            ],
+        }),
+    ],
+});
+
 // Quick Toggles Grid
 const QuickToggles = () => Widget.Box({
-    className: 'cc-toggles',
-    homogeneous: true,
+    className: 'cc-toggles-container',
+    vertical: true,
     children: [
-        WifiToggle(),
-        BluetoothToggle(),
-        DNDToggle(),
-        NightShiftToggle(),
+        // First row
+        Widget.Box({
+            className: 'cc-toggles',
+            homogeneous: true,
+            children: [
+                WifiToggle(),
+                BluetoothToggle(),
+                DNDToggle(),
+                NightShiftToggle(),
+            ],
+        }),
+        // Second row - Theme and Wallpaper controls
+        Widget.Box({
+            className: 'cc-toggles cc-toggles-row2',
+            homogeneous: true,
+            children: [
+                ThemeToggle(),
+                DynamicColorsToggle(),
+                WallpaperButton(),
+            ],
+        }),
     ],
 });
 
@@ -153,18 +296,9 @@ const BrightnessSlider = () => Widget.Box({
             className: 'cc-slider',
             hexpand: true,
             drawValue: false,
+            value: Brightness.bind('screen-value'),
             onChange: ({ value }) => {
-                Utils.execAsync(`brightnessctl s ${Math.round(value * 100)}%`);
-            },
-            setup: self => {
-                // Get initial brightness
-                Utils.execAsync('brightnessctl g')
-                    .then(out => {
-                        Utils.execAsync('brightnessctl m').then(max => {
-                            self.value = parseInt(out) / parseInt(max);
-                        });
-                    })
-                    .catch(() => self.value = 1);
+                Brightness.screen_value = value;
             },
         }),
     ],
@@ -288,6 +422,15 @@ export const ControlCenter = () => Widget.Window({
     child: Widget.Box({
         className: 'control-center',
         vertical: true,
+        setup: self => {
+            self.hook(Theme, () => {
+                self.toggleClassName('dark', Theme.isDark);
+                self.toggleClassName('light', !Theme.isDark);
+            });
+            self.hook(WallpaperColors, () => {
+                self.toggleClassName('dynamic-colors', WallpaperColors.dynamicEnabled);
+            });
+        },
         children: [
             Header(),
             QuickToggles(),
@@ -301,6 +444,7 @@ export const ControlCenter = () => Widget.Window({
                     VolumeSlider(),
                 ],
             }),
+            PerformanceModeSelector(),
             MediaPlayer(),
         ],
     }),

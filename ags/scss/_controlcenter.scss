@@ -1,0 +1,196 @@
+// HyprMac - Control Center Styles
+
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.control-center-window {
+    background: transparent;
+}
+
+.control-center {
+    @include glass-bg(0.9);
+    border-radius: $border-radius-lg;
+    padding: $spacing-lg;
+    margin: $bar-height + $spacing-sm $spacing-sm 0 0;
+    min-width: 320px;
+    box-shadow: $shadow-lg;
+    spacing: $spacing-md;
+}
+
+// Header
+.cc-header {
+    margin-bottom: $spacing-sm;
+}
+
+.cc-title {
+    font-size: $font-size-lg;
+    font-weight: 600;
+    color: $text-primary;
+}
+
+.cc-close {
+    @include button-reset;
+    padding: $spacing-xs $spacing-sm;
+    color: $text-secondary;
+    
+    &:hover {
+        color: $text-primary;
+    }
+}
+
+// Toggle Buttons Container
+.cc-toggles-container {
+    spacing: $spacing-sm;
+    margin-bottom: $spacing-md;
+}
+
+// Toggle Buttons Grid
+.cc-toggles {
+    spacing: $spacing-sm;
+}
+
+.cc-toggles-row2 {
+    margin-top: $spacing-sm;
+}
+
+.cc-toggle {
+    @include toggle-button;
+    min-width: 70px;
+    min-height: 70px;
+    
+    box {
+        spacing: $spacing-xs;
+    }
+    
+    .toggle-label {
+        font-size: $font-size-sm;
+        color: $text-secondary;
+    }
+    
+    &.active {
+        .toggle-label {
+            color: $crust;
+        }
+    }
+}
+
+// Sliders Section
+.cc-sliders {
+    @include card;
+    spacing: $spacing-sm;
+}
+
+.cc-section-label {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $text-secondary;
+    margin-top: $spacing-sm;
+    
+    &:first-child {
+        margin-top: 0;
+    }
+}
+
+.cc-slider-box {
+    spacing: $spacing-md;
+    padding: $spacing-xs 0;
+    
+    button {
+        @include button-reset;
+        padding: $spacing-xs;
+    }
+}
+
+.cc-slider {
+    @include slider;
+    min-width: 200px;
+}
+
+// Media Player Section
+.cc-media {
+    @include card;
+    margin-top: $spacing-sm;
+}
+
+.media-info {
+    spacing: $spacing-md;
+    margin-bottom: $spacing-sm;
+}
+
+.media-cover {
+    min-width: 56px;
+    min-height: 56px;
+    border-radius: $border-radius-md;
+    background-size: cover;
+    background-position: center;
+    background-color: $surface1;
+}
+
+.media-title {
+    font-weight: 600;
+    font-size: $font-size-md;
+    color: $text-primary;
+}
+
+.media-artist {
+    font-size: $font-size-sm;
+    color: $text-secondary;
+}
+
+.media-controls {
+    spacing: $spacing-lg;
+    
+    button {
+        @include button-reset;
+        padding: $spacing-sm $spacing-md;
+        
+        &:hover {
+            background: $bg-hover;
+            border-radius: $border-radius-md;
+        }
+    }
+}
+
+// Performance Mode Section
+.cc-performance {
+    @include card;
+    margin-top: $spacing-sm;
+}
+
+.cc-performance-modes {
+    spacing: $spacing-sm;
+    margin-top: $spacing-sm;
+}
+
+.cc-perf-btn {
+    @include button-reset;
+    padding: $spacing-md $spacing-sm;
+    border-radius: $border-radius-md;
+    background: $surface1;
+    min-width: 80px;
+    
+    box {
+        spacing: $spacing-xs;
+    }
+    
+    .perf-label {
+        font-size: $font-size-sm;
+        color: $text-secondary;
+    }
+    
+    &:hover {
+        background: $surface2;
+    }
+    
+    &.active {
+        background: $accent;
+        
+        icon {
+            color: $crust;
+        }
+        
+        .perf-label {
+            color: $crust;
+        }
+    }
+}

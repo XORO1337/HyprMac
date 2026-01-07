@@ -4,6 +4,8 @@ import App from 'resource:///com/github/Aylur/ags/app.js';
 import Applications from 'resource:///com/github/Aylur/ags/service/applications.js';
 import Hyprland from 'resource:///com/github/Aylur/ags/service/hyprland.js';
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
+import Theme from '../services/theme.js';
+import WallpaperColors from '../services/wallpaper-colors.js';
 
 // Default dock apps
 const DOCK_APPS = [
@@ -133,6 +135,15 @@ export const Dock = (monitor = 0) => Widget.Window({
     className: 'dock-window',
     child: Widget.Box({
         className: 'dock',
+        setup: self => {
+            self.hook(Theme, () => {
+                self.toggleClassName('dark', Theme.isDark);
+                self.toggleClassName('light', !Theme.isDark);
+            });
+            self.hook(WallpaperColors, () => {
+                self.toggleClassName('dynamic-colors', WallpaperColors.dynamicEnabled);
+            });
+        },
         child: DockItems(),
     }),
 });

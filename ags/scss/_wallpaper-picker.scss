@@ -1,0 +1,407 @@
+// Wallpaper Picker Styles
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// Overlay background (semi-transparent dark overlay)
+.wallpaper-picker-overlay {
+    background: alpha(black, 0.4);
+    min-width: 100%;
+    min-height: 100%;
+}
+
+// Main picker container - Frosted glass effect
+// Blur is handled by Hyprland layer rules: layerrule = blur, wallpaper-picker
+.wallpaper-picker {
+    // Frosted glass background with transparency
+    background: alpha($bg-primary, 0.75);
+    border: 1px solid alpha($text, 0.15);
+    box-shadow: 
+        0 25px 50px -12px alpha(black, 0.5),
+        0 0 0 1px alpha(white, 0.05) inset;
+    
+    min-width: 800px;
+    min-height: 600px;
+    max-width: 1000px;
+    max-height: 800px;
+    border-radius: $border-radius-lg;
+    padding: $spacing-lg;
+    margin: $spacing-xl;
+    
+    // Header
+    .wallpaper-picker-header {
+        margin-bottom: $spacing-md;
+        padding-bottom: $spacing-md;
+        border-bottom: 1px solid $border-color;
+        
+        .header-title {
+            font-size: $font-size-xl;
+            font-weight: 600;
+            color: $text-primary;
+        }
+        
+        .close-button {
+            @include button-base;
+            padding: $spacing-xs;
+            border-radius: $border-radius-round;
+            
+            &:hover {
+                background: rgba($accent-color, 0.2);
+            }
+        }
+    }
+    
+    // Search bar
+    .wallpaper-search-bar {
+        background: $bg-secondary;
+        border-radius: $border-radius-md;
+        padding: $spacing-sm $spacing-md;
+        margin-bottom: $spacing-md;
+        
+        .search-icon {
+            color: $text-secondary;
+            margin-right: $spacing-sm;
+        }
+        
+        .wallpaper-search {
+            background: transparent;
+            border: none;
+            color: $text-primary;
+            min-width: 200px;
+            
+            &::placeholder {
+                color: $text-tertiary;
+            }
+        }
+        
+        .refresh-button {
+            @include button-base;
+            padding: $spacing-xs;
+            border-radius: $border-radius-sm;
+            margin-left: $spacing-sm;
+            
+            &:hover {
+                background: rgba($accent-color, 0.2);
+            }
+        }
+    }
+    
+    // Filter tabs
+    .wallpaper-filter-tabs {
+        margin-bottom: $spacing-md;
+        background: $bg-secondary;
+        border-radius: $border-radius-md;
+        padding: 4px;
+        
+        .filter-tab {
+            @include button-base;
+            padding: $spacing-sm $spacing-md;
+            border-radius: $border-radius-sm;
+            color: $text-secondary;
+            transition: all 200ms ease;
+            
+            &:hover:not(.active) {
+                color: $text-primary;
+                background: rgba(255, 255, 255, 0.05);
+            }
+            
+            &.active {
+                background: $accent-color;
+                color: $bg-primary;
+                font-weight: 500;
+            }
+        }
+    }
+    
+    // Content area
+    .wallpaper-content {
+        min-height: 350px;
+    }
+    
+    // Scrollable area
+    .wallpaper-scroll {
+        border-radius: $border-radius-md;
+    }
+    
+    // Wallpaper grid - using FlowBox style
+    .wallpaper-grid {
+        padding: $spacing-sm;
+        min-width: 720px;
+        
+        // CSS Grid simulation with box wrapping
+        // AGS uses Gtk.Box, so we use homogeneous or manual sizing
+    }
+    
+    // Individual wallpaper item
+    .wallpaper-item {
+        @include button-base;
+        margin: $spacing-xs;
+        padding: $spacing-xs;
+        border-radius: $border-radius-md;
+        background: $bg-secondary;
+        transition: all 200ms ease;
+        
+        &:hover {
+            background: $bg-tertiary;
+            transform: scale(1.02);
+        }
+        
+        &.selected {
+            outline: 3px solid $accent-color;
+            outline-offset: 2px;
+        }
+        
+        .wallpaper-thumbnail {
+            border-radius: $border-radius-sm;
+            overflow: hidden;
+            
+            .video-indicator {
+                color: white;
+                background: rgba(0, 0, 0, 0.6);
+                border-radius: $border-radius-round;
+                padding: $spacing-xs;
+                margin: auto;
+            }
+        }
+        
+        .wallpaper-name {
+            font-size: $font-size-sm;
+            color: $text-secondary;
+            margin-top: $spacing-xs;
+            padding: 0 $spacing-xs;
+        }
+    }
+    
+    // Loading state
+    .loading-indicator {
+        .loading-spinner {
+            min-width: 48px;
+            min-height: 48px;
+            color: $accent-color;
+        }
+        
+        .loading-text {
+            color: $text-secondary;
+            margin-top: $spacing-md;
+        }
+    }
+    
+    // Empty state
+    .empty-state {
+        padding: $spacing-xl;
+        
+        .empty-icon {
+            color: $text-tertiary;
+            margin-bottom: $spacing-md;
+        }
+        
+        .empty-title {
+            font-size: $font-size-lg;
+            font-weight: 600;
+            color: $text-primary;
+            margin-bottom: $spacing-xs;
+        }
+        
+        .empty-subtitle {
+            color: $text-secondary;
+            font-size: $font-size-sm;
+            margin-bottom: $spacing-md;
+        }
+        
+        .open-folder-button {
+            @include button-accent;
+            padding: $spacing-sm $spacing-lg;
+        }
+    }
+    
+    // Color preview panel
+    .color-preview {
+        margin-top: $spacing-md;
+        padding-top: $spacing-md;
+        border-top: 1px solid $border-color;
+        
+        .color-preview-title {
+            font-size: $font-size-sm;
+            font-weight: 600;
+            color: $text-secondary;
+            margin-bottom: $spacing-sm;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .color-swatches {
+            margin-bottom: $spacing-sm;
+            
+            .color-swatch {
+                min-width: 40px;
+                min-height: 32px;
+                border-radius: $border-radius-sm;
+                margin: 0 $spacing-xs;
+                transition: transform 200ms ease;
+                
+                &:first-child {
+                    margin-left: 0;
+                }
+                
+                &:last-child {
+                    margin-right: 0;
+                }
+                
+                &:hover {
+                    transform: scale(1.1);
+                }
+            }
+        }
+        
+        .color-toggle-row {
+            padding: $spacing-sm 0;
+            
+            label {
+                color: $text-primary;
+            }
+            
+            .dynamic-colors-switch {
+                min-width: 48px;
+                min-height: 24px;
+                border-radius: 12px;
+                background: $bg-tertiary;
+                
+                &:checked {
+                    background: $accent-color;
+                }
+                
+                slider {
+                    min-width: 20px;
+                    min-height: 20px;
+                    border-radius: 10px;
+                    background: white;
+                    margin: 2px;
+                }
+            }
+        }
+    }
+    
+    // Light theme adjustments - Frosted glass (light)
+    &.light {
+        background: alpha(white, 0.8);
+        border: 1px solid alpha(black, 0.1);
+        box-shadow: 
+            0 25px 50px -12px alpha(black, 0.25),
+            0 0 0 1px alpha(white, 0.5) inset;
+        
+        .wallpaper-picker-header {
+            border-color: alpha(black, 0.1);
+            
+            .header-title {
+                color: $text-primary-light;
+            }
+        }
+        
+        .wallpaper-search-bar {
+            background: alpha(black, 0.05);
+            
+            .search-icon {
+                color: $text-secondary-light;
+            }
+            
+            .wallpaper-search {
+                color: $text-primary-light;
+            }
+        }
+        
+        .wallpaper-filter-tabs {
+            background: rgba(0, 0, 0, 0.05);
+            
+            .filter-tab {
+                color: $text-secondary-light;
+                
+                &:hover:not(.active) {
+                    color: $text-primary-light;
+                }
+                
+                &.active {
+                    background: $accent-color;
+                    color: white;
+                }
+            }
+        }
+        
+        .wallpaper-item {
+            background: rgba(0, 0, 0, 0.03);
+            
+            &:hover {
+                background: rgba(0, 0, 0, 0.08);
+            }
+            
+            .wallpaper-name {
+                color: $text-secondary-light;
+            }
+        }
+        
+        .color-preview {
+            border-color: rgba(0, 0, 0, 0.1);
+            
+            .color-toggle-row label {
+                color: $text-primary-light;
+            }
+        }
+    }
+}
+
+// Dynamic colors support - Frosted glass with dynamic colors
+.wallpaper-picker.dynamic-colors {
+    // Dynamic background with transparency for blur effect
+    background: var(--dynamic-background);
+    border: 1px solid alpha(white, 0.15);
+    box-shadow: 
+        0 25px 50px -12px alpha(black, 0.5),
+        0 0 0 1px alpha(white, 0.05) inset;
+    
+    .wallpaper-picker-header {
+        border-color: alpha(white, 0.1);
+        
+        .header-title {
+            color: var(--dynamic-text);
+        }
+    }
+    
+    .wallpaper-search-bar {
+        background: var(--dynamic-surface);
+        
+        .wallpaper-search {
+            color: var(--dynamic-text);
+        }
+    }
+    
+    .wallpaper-filter-tabs {
+        background: var(--dynamic-surface);
+        
+        .filter-tab {
+            color: var(--dynamic-subtext);
+            
+            &.active {
+                background: var(--dynamic-primary);
+                color: var(--dynamic-accent-text);
+            }
+        }
+    }
+    
+    .wallpaper-item {
+        background: var(--dynamic-surface);
+        
+        &.selected {
+            outline-color: var(--dynamic-primary);
+        }
+        
+        .wallpaper-name {
+            color: var(--dynamic-subtext);
+        }
+    }
+    
+    .color-preview {
+        border-color: alpha(white, 0.1);
+        
+        .color-toggle-row label {
+            color: var(--dynamic-text);
+        }
+    }
+}

@@ -81,24 +81,39 @@ The installation script will:
 
 ```
 HyprMac/
-├── ags/                    # AGS configuration
-│   ├── config.js           # Main AGS config
-│   ├── style.css           # Global styling
-│   └── widgets/            # Widget modules
-│       ├── bar.js          # Top menu bar
-│       ├── dock.js         # Bottom dock
-│       ├── controlcenter.js# Control center panel
-│       ├── launcher.js     # App launcher
-│       ├── notifications.js# Notification popups
-│       └── osd.js          # Volume/brightness OSD
-├── hypr/                   # Hyprland configuration
-│   ├── hyprland.conf       # Main config
-│   ├── hyprlock.conf       # Lock screen config
-│   └── wallpaper.sh        # Wallpaper script
-├── kitty/                  # Kitty terminal config
-├── anyrun/                 # Anyrun launcher config
-├── swaync/                 # SwayNC notification config
-├── install.sh              # Installation script
+├── ags/                      # AGS configuration
+│   ├── config.js             # Main AGS config (entry point)
+│   ├── style.css             # Compiled CSS (from SCSS)
+│   ├── scss/                 # SCSS source files
+│   │   ├── main.scss         # Main SCSS entry
+│   │   ├── _variables.scss   # Colors, dimensions, fonts
+│   │   ├── _mixins.scss      # Reusable style patterns
+│   │   ├── _bar.scss         # Top menu bar styles
+│   │   ├── _dock.scss        # Bottom dock styles
+│   │   ├── _controlcenter.scss # Control center styles
+│   │   ├── _launcher.scss    # App launcher styles
+│   │   ├── _notifications.scss # Notification styles
+│   │   └── _osd.scss         # OSD styles
+│   ├── services/             # Custom AGS services
+│   │   ├── index.js          # Services export
+│   │   ├── brightness.js     # Screen brightness service
+│   │   ├── nightshift.js     # Night Shift (gammastep)
+│   │   └── dnd.js            # Do Not Disturb (swaync)
+│   └── widgets/              # Widget modules
+│       ├── bar.js            # Top menu bar
+│       ├── dock.js           # Bottom dock
+│       ├── controlcenter.js  # Control center panel
+│       ├── launcher.js       # App launcher (Spotlight)
+│       ├── notifications.js  # Notification popups
+│       └── osd.js            # Volume/brightness OSD
+├── hypr/                     # Hyprland configuration
+│   ├── hyprland.conf         # Main config
+│   ├── hyprlock.conf         # Lock screen config
+│   └── wallpaper.sh          # Wallpaper script
+├── kitty/                    # Kitty terminal config
+├── anyrun/                   # Anyrun launcher config
+├── swaync/                   # SwayNC notification config
+├── install.sh                # Installation script
 └── README.md
 ```
 
@@ -106,14 +121,18 @@ HyprMac/
 
 ### Changing Colors
 
-Edit `~/.config/ags/style.css` to customize the color scheme. The default theme uses Catppuccin Mocha colors:
+The project uses SCSS for styling with Catppuccin Mocha colors. Edit `~/.config/ags/scss/_variables.scss`:
 
-```css
-/* Example: Change accent color */
-.workspace-btn.active {
-    background: alpha(#your-color, 0.3);
-    color: #your-color;
-}
+```scss
+// Change accent color
+$accent: #89b4fa;  // Default blue
+$accent: #cba6f7;  // Mauve alternative
+$accent: #a6e3a1;  // Green alternative
+```
+
+Then recompile by restarting AGS, or run:
+```bash
+sassc ~/.config/ags/scss/main.scss ~/.config/ags/style.css
 ```
 
 ### Adding Dock Apps

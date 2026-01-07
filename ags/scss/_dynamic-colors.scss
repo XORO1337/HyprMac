@@ -1,0 +1,284 @@
+// Dynamic Wallpaper Colors Support
+// Colors are extracted from wallpaper and applied via CSS variables
+// These styles apply when .dynamic-colors class is active
+
+// Import dynamic colors CSS variables (generated at runtime)
+// The WallpaperColors service generates ~/.cache/hyprmac/dynamic-colors.css
+
+// Default fallback variables (overridden by generated CSS)
+:root {
+    --dynamic-primary: #89b4fa;
+    --dynamic-secondary: #b4befe;
+    --dynamic-tertiary: #94e2d5;
+    --dynamic-background: rgba(30, 30, 46, 0.85);
+    --dynamic-surface: rgba(49, 50, 68, 0.9);
+    --dynamic-text: #cdd6f4;
+    --dynamic-subtext: #a6adc8;
+    --dynamic-accent-text: #1e1e2e;
+}
+
+// Mixin for dynamic color application with preserved transparency
+@mixin dynamic-background($opacity: 0.85) {
+    background: var(--dynamic-background);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+@mixin dynamic-surface($opacity: 0.9) {
+    background: var(--dynamic-surface);
+}
+
+@mixin dynamic-accent {
+    background: var(--dynamic-primary);
+    color: var(--dynamic-accent-text);
+}
+
+// Bar with dynamic colors
+.bar.dynamic-colors {
+    @include dynamic-background(0.75);
+    
+    .bar-item {
+        color: var(--dynamic-text);
+        
+        &:hover {
+            background: var(--dynamic-surface);
+        }
+    }
+    
+    .bar-workspaces {
+        .workspace-button {
+            background: transparent;
+            color: var(--dynamic-subtext);
+            
+            &.active {
+                @include dynamic-accent;
+            }
+            
+            &:hover:not(.active) {
+                background: var(--dynamic-surface);
+            }
+        }
+    }
+    
+    .bar-clock {
+        color: var(--dynamic-text);
+        font-weight: 600;
+    }
+    
+    .bar-system-tray {
+        .tray-icon {
+            color: var(--dynamic-text);
+        }
+    }
+}
+
+// Dock with dynamic colors
+.dock.dynamic-colors {
+    @include dynamic-background(0.7);
+    border: 1px solid rgba(var(--dynamic-primary), 0.3);
+    
+    .dock-item {
+        &:hover {
+            background: var(--dynamic-surface);
+        }
+        
+        .dock-indicator {
+            background: var(--dynamic-primary);
+        }
+    }
+}
+
+// Control Center with dynamic colors
+.control-center.dynamic-colors {
+    @include dynamic-background(0.9);
+    
+    .cc-header {
+        color: var(--dynamic-text);
+        
+        .cc-date {
+            color: var(--dynamic-subtext);
+        }
+    }
+    
+    .cc-quick-toggle {
+        @include dynamic-surface;
+        color: var(--dynamic-text);
+        
+        &.active {
+            @include dynamic-accent;
+        }
+        
+        &:hover:not(.active) {
+            background: rgba(var(--dynamic-primary), 0.2);
+        }
+    }
+    
+    .cc-slider {
+        .slider-icon {
+            color: var(--dynamic-primary);
+        }
+        
+        slider {
+            background: var(--dynamic-subtext);
+        }
+        
+        trough {
+            background: var(--dynamic-surface);
+        }
+        
+        highlight {
+            background: var(--dynamic-primary);
+        }
+    }
+    
+    .cc-section-label {
+        color: var(--dynamic-subtext);
+    }
+    
+    .performance-mode {
+        @include dynamic-surface;
+        
+        .performance-option {
+            color: var(--dynamic-text);
+            
+            &.active {
+                @include dynamic-accent;
+            }
+        }
+    }
+    
+    .cc-media {
+        @include dynamic-surface;
+        
+        .media-title {
+            color: var(--dynamic-text);
+        }
+        
+        .media-artist {
+            color: var(--dynamic-subtext);
+        }
+        
+        .media-control {
+            color: var(--dynamic-text);
+            
+            &:hover {
+                color: var(--dynamic-primary);
+            }
+        }
+    }
+}
+
+// Launcher with dynamic colors
+.launcher.dynamic-colors {
+    @include dynamic-background(0.92);
+    
+    .launcher-search {
+        background: var(--dynamic-surface);
+        color: var(--dynamic-text);
+        caret-color: var(--dynamic-primary);
+        
+        &::placeholder {
+            color: var(--dynamic-subtext);
+        }
+    }
+    
+    .launcher-item {
+        color: var(--dynamic-text);
+        
+        &:hover,
+        &:focus {
+            background: var(--dynamic-surface);
+        }
+        
+        &:first-child {
+            background: var(--dynamic-primary);
+            color: var(--dynamic-accent-text);
+        }
+        
+        .launcher-item-name {
+            color: inherit;
+        }
+        
+        .launcher-item-desc {
+            color: var(--dynamic-subtext);
+        }
+    }
+}
+
+// Notifications with dynamic colors
+.notification-list.dynamic-colors {
+    .notification {
+        @include dynamic-background(0.95);
+        border: 1px solid rgba(var(--dynamic-primary), 0.2);
+        
+        .notification-title {
+            color: var(--dynamic-text);
+        }
+        
+        .notification-body {
+            color: var(--dynamic-subtext);
+        }
+        
+        .notification-app {
+            color: var(--dynamic-subtext);
+        }
+        
+        .notification-close {
+            color: var(--dynamic-subtext);
+            
+            &:hover {
+                color: var(--dynamic-text);
+                background: rgba(255, 255, 255, 0.1);
+            }
+        }
+        
+        .notification-action {
+            background: var(--dynamic-surface);
+            color: var(--dynamic-text);
+            
+            &:hover {
+                @include dynamic-accent;
+            }
+        }
+        
+        &.critical {
+            border-color: #f38ba8;
+        }
+    }
+}
+
+// OSD with dynamic colors
+.osd.dynamic-colors {
+    @include dynamic-background(0.9);
+    
+    .osd-icon {
+        color: var(--dynamic-primary);
+    }
+    
+    .osd-progress {
+        levelbar {
+            trough {
+                background: var(--dynamic-surface);
+            }
+            
+            block.filled {
+                background: var(--dynamic-primary);
+            }
+        }
+    }
+}
+
+// Smooth transitions when colors change
+.dynamic-colors {
+    transition: 
+        background-color 500ms ease,
+        border-color 500ms ease,
+        color 300ms ease;
+    
+    * {
+        transition: 
+            background-color 500ms ease,
+            border-color 500ms ease,
+            color 300ms ease;
+    }
+}

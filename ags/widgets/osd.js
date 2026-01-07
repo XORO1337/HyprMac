@@ -2,6 +2,9 @@
 import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 import Audio from 'resource:///com/github/Aylur/ags/service/audio.js';
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
+import Brightness from '../services/brightness.js';
+import Theme from '../services/theme.js';
+import WallpaperColors from '../services/wallpaper-colors.js';
 
 const DELAY = 1500;
 let count = 0;
@@ -26,6 +29,15 @@ const OSDIcon = () => Widget.Icon({
 const OSDContent = () => Widget.Box({
     className: 'osd',
     vertical: true,
+    setup: self => {
+        self.hook(Theme, () => {
+            self.toggleClassName('dark', Theme.isDark);
+            self.toggleClassName('light', !Theme.isDark);
+        });
+        self.hook(WallpaperColors, () => {
+            self.toggleClassName('dynamic-colors', WallpaperColors.dynamicEnabled);
+        });
+    },
     children: [
         OSDIcon(),
         Progress(),
@@ -74,6 +86,16 @@ export const OSD = () => {
         
         show(icon, vol, window);
     }, 'speaker-changed');
+    
+    // Hook into Brightness service for brightness changes
+    window.hook(Brightness, () => {
+        const brightness = Brightness.screen_value;
+        const icon = brightness > 0.66 ? 'display-brightness-high-symbolic' :
+            brightness > 0.33 ? 'display-brightness-medium-symbolic' :
+            'display-brightness-low-symbolic';
+        
+        show(icon, brightness, window);
+    }, 'screen-changed');
     
     return window;
 };

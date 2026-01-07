@@ -4,6 +4,8 @@ import App from 'resource:///com/github/Aylur/ags/app.js';
 import Applications from 'resource:///com/github/Aylur/ags/service/applications.js';
 import Variable from 'resource:///com/github/Aylur/ags/variable.js';
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
+import Theme from '../services/theme.js';
+import WallpaperColors from '../services/wallpaper-colors.js';
 
 // Results variable
 const Results = Variable([]);
@@ -99,6 +101,15 @@ export const Launcher = () => {
         child: Widget.Box({
             className: 'launcher',
             vertical: true,
+            setup: self => {
+                self.hook(Theme, () => {
+                    self.toggleClassName('dark', Theme.isDark);
+                    self.toggleClassName('light', !Theme.isDark);
+                });
+                self.hook(WallpaperColors, () => {
+                    self.toggleClassName('dynamic-colors', WallpaperColors.dynamicEnabled);
+                });
+            },
             children: [
                 Widget.Box({
                     className: 'launcher-header',

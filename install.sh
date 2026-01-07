@@ -138,6 +138,9 @@ CORE_PACKAGES=(
     kitty
     nautilus
     libnotify
+    sassc
+    ffmpeg
+    imagemagick
 )
 
 # Optional packages (nice to have)
@@ -154,6 +157,9 @@ OPTIONAL_PACKAGES=(
     gammastep
     sassc
     gnome-bluetooth-3.0
+    power-profiles-daemon
+    cpupower
+    mpv
 )
 
 echo -e "  Installing core packages..."
@@ -223,6 +229,7 @@ if command -v yay &> /dev/null; then
         "ttf-nerd-fonts-symbols"
         "hyprlock"
         "hypridle"
+        "gslapper"
     )
     
     for pkg in "${AUR_PACKAGES[@]}"; do
@@ -299,6 +306,8 @@ SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # AGS configuration
 if [ -d "$SCRIPT_DIR/ags" ]; then
     mkdir -p ~/.config/ags/widgets ~/.config/ags/services ~/.config/ags/scss
+    mkdir -p ~/.config/hyprmac  # For theme/color settings
+    mkdir -p ~/.cache/hyprmac   # For dynamic color extraction cache
     cp -rf "$SCRIPT_DIR/ags/"* ~/.config/ags/ 2>/dev/null && log_success "AGS configuration" || log_error "Failed to copy AGS config"
 else
     log_error "AGS config directory not found in $SCRIPT_DIR"

@@ -1,0 +1,83 @@
+// HyprMac - Notification Popup Styles
+
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.notification-popups {
+    background: transparent;
+}
+
+.notification-list {
+    spacing: $spacing-sm;
+    margin: $bar-height + $spacing-sm $spacing-md 0 0;
+}
+
+.notification {
+    @include glass-bg(0.95);
+    border-radius: $border-radius-lg;
+    padding: $spacing-md;
+    min-width: 350px;
+    max-width: 400px;
+    box-shadow: $shadow-md;
+    spacing: $spacing-md;
+    animation: slideDown $transition-slow;
+    
+    &.critical {
+        border-left: 3px solid $error;
+    }
+    
+    &.low {
+        opacity: 0.9;
+    }
+}
+
+.notification-icon {
+    min-width: 48px;
+    min-height: 48px;
+}
+
+.notification-title {
+    font-weight: 600;
+    font-size: $font-size-md;
+    color: $text-primary;
+}
+
+.notification-app {
+    font-size: $font-size-sm;
+    color: $text-muted;
+}
+
+.notification-body {
+    font-size: $font-size-md;
+    color: $text-secondary;
+    margin-top: $spacing-xs;
+}
+
+.notification-close {
+    @include button-reset;
+    padding: 2px $spacing-xs;
+    color: $text-muted;
+    font-size: $font-size-sm;
+    
+    &:hover {
+        color: $text-primary;
+    }
+}
+
+.notification-actions {
+    spacing: $spacing-sm;
+    margin-top: $spacing-sm;
+}
+
+.notification-action {
+    @include button-reset;
+    padding: $spacing-xs $spacing-md;
+    background: $bg-secondary;
+    border-radius: $border-radius-sm;
+    font-size: $font-size-sm;
+    
+    &:hover {
+        background: $accent;
+        color: $crust;
+    }
+}

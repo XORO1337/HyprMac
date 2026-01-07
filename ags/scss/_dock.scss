@@ -1,0 +1,70 @@
+// HyprMac - Dock Styles
+
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.dock-window {
+    background: transparent;
+}
+
+.dock {
+    @include glass-bg(0.8);
+    border-radius: $border-radius-xl;
+    padding: $dock-padding;
+    margin: 0 0 $spacing-sm 0;
+    box-shadow: $shadow-lg;
+}
+
+.dock-items {
+    spacing: $spacing-xs;
+}
+
+.dock-item {
+    padding: $spacing-xs;
+    border-radius: $border-radius-md;
+    transition: all $transition-normal;
+    
+    &:hover {
+        background: $bg-hover;
+    }
+    
+    // Bounce animation on hover
+    &.hovered {
+        margin-top: -8px;
+        margin-bottom: 8px;
+    }
+}
+
+.dock-item-box {
+    spacing: 2px;
+}
+
+// Running indicator dot
+.dock-indicator {
+    min-width: 4px;
+    min-height: 4px;
+    border-radius: 50%;
+    background: transparent;
+    margin-top: 2px;
+    
+    &.running {
+        background: $text-secondary;
+    }
+}
+
+// Separator between pinned apps and trash
+.dock-separator {
+    min-width: 1px;
+    min-height: 48px;
+    margin: 0 $spacing-sm;
+    background: $overlay0;
+}
+
+// Trash icon
+.dock-trash {
+    opacity: 0.8;
+    
+    &:hover {
+        opacity: 1;
+    }
+}

@@ -322,6 +322,53 @@
 }
 
 /* ============================================
+   Performance Mode
+   ============================================ */
+.cc-performance {
+    background: #313244;
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 8px;
+}
+
+.cc-performance-modes {
+    spacing: 8px;
+    margin-top: 8px;
+}
+
+.cc-perf-btn {
+    padding: 12px 8px;
+    border-radius: 8px;
+    background: #45475a;
+    min-width: 80px;
+}
+
+.cc-perf-btn box {
+    spacing: 4px;
+}
+
+.cc-perf-btn .perf-label {
+    font-size: 11px;
+    color: #a6adc8;
+}
+
+.cc-perf-btn:hover {
+    background: #585b70;
+}
+
+.cc-perf-btn.active {
+    background: #89b4fa;
+}
+
+.cc-perf-btn.active icon {
+    color: #11111b;
+}
+
+.cc-perf-btn.active .perf-label {
+    color: #11111b;
+}
+
+/* ============================================
    Launcher (Spotlight)
    ============================================ */
 .launcher-window {
@@ -548,4 +595,300 @@ tooltip {
     padding: 6px 10px;
     color: #cdd6f4;
     border: 1px solid alpha(#ffffff, 0.1);
+}
+
+/* ============================================
+   Toggles Container
+   ============================================ */
+.cc-toggles-container {
+    spacing: 8px;
+    margin-bottom: 12px;
+}
+
+.cc-toggles-row2 {
+    margin-top: 8px;
+}
+
+/* Theme Toggle */
+.cc-theme-toggle.light-mode {
+    background: #df8e1d;
+}
+
+.cc-theme-toggle.light-mode icon {
+    color: white;
+}
+
+.cc-theme-toggle.light-mode .toggle-label {
+    color: white;
+}
+
+/* ============================================
+   Light Theme Overrides
+   ============================================ */
+.light .bar-container {
+    background: alpha(#eff1f5, 0.85);
+}
+
+.light .apple-menu,
+.light .active-app,
+.light .clock,
+.light .battery,
+.light .volume,
+.light .wifi,
+.light .bluetooth,
+.light .control-center-btn {
+    color: #4c4f69;
+}
+
+.light .workspace-btn {
+    color: #6c6f85;
+}
+
+.light .workspace-btn:hover {
+    background: alpha(#4c4f69, 0.1);
+}
+
+.light .workspace-btn.active {
+    background: alpha(#1e66f5, 0.3);
+    color: #1e66f5;
+}
+
+.light .dock {
+    background: alpha(#eff1f5, 0.85);
+    box-shadow: 0 8px 24px alpha(black, 0.15);
+}
+
+.light .dock-item:hover {
+    background: alpha(#4c4f69, 0.1);
+}
+
+.light .dock-indicator.running {
+    background: #6c6f85;
+}
+
+.light .dock-separator {
+    background: #9ca0b0;
+}
+
+.light .control-center {
+    background: alpha(#eff1f5, 0.92);
+    box-shadow: 0 8px 24px alpha(black, 0.15);
+}
+
+.light .cc-title {
+    color: #4c4f69;
+}
+
+.light .cc-close {
+    color: #6c6f85;
+}
+
+.light .cc-toggle {
+    background: #ccd0da;
+}
+
+.light .cc-toggle icon {
+    color: #4c4f69;
+}
+
+.light .cc-toggle .toggle-label {
+    color: #6c6f85;
+}
+
+.light .cc-toggle:hover {
+    background: #bcc0cc;
+}
+
+.light .cc-toggle.active {
+    background: #1e66f5;
+}
+
+.light .cc-toggle.active icon {
+    color: white;
+}
+
+.light .cc-toggle.active .toggle-label {
+    color: white;
+}
+
+.light .cc-section-label {
+    color: #6c6f85;
+}
+
+.light .cc-sliders,
+.light .cc-performance,
+.light .cc-media {
+    background: #ccd0da;
+}
+
+.light .cc-slider-box icon {
+    color: #4c4f69;
+}
+
+.light .cc-slider trough {
+    background: #bcc0cc;
+}
+
+.light .cc-slider trough highlight {
+    background: #1e66f5;
+}
+
+.light .cc-slider slider {
+    background: white;
+    box-shadow: 0 1px 3px alpha(black, 0.2);
+}
+
+.light .cc-perf-btn {
+    background: #bcc0cc;
+}
+
+.light .cc-perf-btn icon {
+    color: #4c4f69;
+}
+
+.light .cc-perf-btn .perf-label {
+    color: #6c6f85;
+}
+
+.light .cc-perf-btn:hover {
+    background: #acb0be;
+}
+
+.light .cc-perf-btn.active {
+    background: #1e66f5;
+}
+
+.light .cc-perf-btn.active icon {
+    color: white;
+}
+
+.light .cc-perf-btn.active .perf-label {
+    color: white;
+}
+
+.light .media-title {
+    color: #4c4f69;
+}
+
+.light .media-artist {
+    color: #6c6f85;
+}
+
+.light .media-cover {
+    background-color: #bcc0cc;
+}
+
+.light .media-controls button {
+    color: #4c4f69;
+}
+
+.light .media-controls button:hover {
+    background: alpha(#4c4f69, 0.1);
+}
+
+.light .launcher {
+    background: alpha(#eff1f5, 0.95);
+    box-shadow: 0 10px 40px alpha(black, 0.2);
+}
+
+.light .launcher-header icon {
+    color: #6c6f85;
+}
+
+.light .launcher-search {
+    background: #ccd0da;
+    color: #4c4f69;
+}
+
+.light .launcher-search:focus {
+    background: #bcc0cc;
+}
+
+.light .launcher-item:hover {
+    background: alpha(#4c4f69, 0.08);
+}
+
+.light .launcher-item-name {
+    color: #4c4f69;
+}
+
+.light .launcher-item-desc {
+    color: #6c6f85;
+}
+
+.light .launcher-item:focus {
+    background: #1e66f5;
+}
+
+.light .launcher-item:focus .launcher-item-name {
+    color: white;
+}
+
+.light .launcher-item:focus .launcher-item-desc {
+    color: alpha(white, 0.8);
+}
+
+.light .notification {
+    background: alpha(#eff1f5, 0.95);
+    box-shadow: 0 4px 12px alpha(black, 0.15);
+}
+
+.light .notification-title {
+    color: #4c4f69;
+}
+
+.light .notification-body {
+    color: #6c6f85;
+}
+
+.light .notification-app {
+    color: #8c8fa1;
+}
+
+.light .notification-close {
+    color: #8c8fa1;
+}
+
+.light .notification-action {
+    background: #ccd0da;
+    color: #4c4f69;
+}
+
+.light .notification-action:hover {
+    background: #1e66f5;
+    color: white;
+}
+
+.light .osd {
+    background: alpha(#eff1f5, 0.92);
+    box-shadow: 0 8px 24px alpha(black, 0.15);
+}
+
+.light .osd-icon {
+    color: #4c4f69;
+}
+
+.light .osd-progress levelbar trough {
+    background: #bcc0cc;
+}
+
+.light .osd-progress levelbar block.filled {
+    background: #1e66f5;
+}
+
+.light tooltip {
+    background: alpha(#eff1f5, 0.95);
+    color: #4c4f69;
+}
+
+.light menu {
+    background: alpha(#eff1f5, 0.95);
+}
+
+.light menuitem {
+    color: #4c4f69;
+}
+
+.light menuitem:hover {
+    background: alpha(#1e66f5, 0.2);
 }

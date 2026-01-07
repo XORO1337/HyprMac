@@ -9,6 +9,8 @@ import SystemTray from 'resource:///com/github/Aylur/ags/service/systemtray.js';
 import App from 'resource:///com/github/Aylur/ags/app.js';
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 import GLib from 'gi://GLib';
+import Theme from '../services/theme.js';
+import WallpaperColors from '../services/wallpaper-colors.js';
 
 // Apple Logo
 const AppleMenu = () => Widget.Button({
@@ -170,6 +172,15 @@ export const Bar = (monitor = 0) => Widget.Window({
     className: 'bar',
     child: Widget.CenterBox({
         className: 'bar-container',
+        setup: self => {
+            self.hook(Theme, () => {
+                self.toggleClassName('dark', Theme.isDark);
+                self.toggleClassName('light', !Theme.isDark);
+            });
+            self.hook(WallpaperColors, () => {
+                self.toggleClassName('dynamic-colors', WallpaperColors.dynamicEnabled);
+            });
+        },
         startWidget: Left(),
         centerWidget: Center(),
         endWidget: Right(),

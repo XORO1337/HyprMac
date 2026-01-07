@@ -1,0 +1,94 @@
+// HyprMac SCSS Variables
+// Catppuccin Mocha color palette for macOS-style theming
+
+// ============================================
+// Colors - Catppuccin Mocha
+// ============================================
+$rosewater: #f5e0dc;
+$flamingo: #f2cdcd;
+$pink: #f5c2e7;
+$mauve: #cba6f7;
+$red: #f38ba8;
+$maroon: #eba0ac;
+$peach: #fab387;
+$yellow: #f9e2af;
+$green: #a6e3a1;
+$teal: #94e2d5;
+$sky: #89dceb;
+$sapphire: #74c7ec;
+$blue: #89b4fa;
+$lavender: #b4befe;
+
+$text: #cdd6f4;
+$subtext1: #bac2de;
+$subtext0: #a6adc8;
+$overlay2: #9399b2;
+$overlay1: #7f849c;
+$overlay0: #6c7086;
+$surface2: #585b70;
+$surface1: #45475a;
+$surface0: #313244;
+$base: #1e1e2e;
+$mantle: #181825;
+$crust: #11111b;
+
+// ============================================
+// Semantic Colors
+// ============================================
+$bg-primary: $base;
+$bg-secondary: $surface0;
+$bg-tertiary: $surface1;
+$bg-hover: alpha($text, 0.1);
+$bg-active: alpha($blue, 0.3);
+
+$text-primary: $text;
+$text-secondary: $subtext0;
+$text-muted: $overlay1;
+
+$accent: $blue;
+$accent-hover: lighten($blue, 10%);
+$success: $green;
+$warning: $yellow;
+$error: $red;
+
+// ============================================
+// Dimensions
+// ============================================
+$bar-height: 28px;
+$dock-height: 64px;
+$dock-padding: 8px;
+
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 12px;
+$border-radius-xl: 16px;
+
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 12px;
+$spacing-lg: 16px;
+$spacing-xl: 24px;
+
+// ============================================
+// Effects
+// ============================================
+$blur: blur(30px);
+$shadow-sm: 0 1px 3px alpha(black, 0.2);
+$shadow-md: 0 4px 12px alpha(black, 0.3);
+$shadow-lg: 0 8px 24px alpha(black, 0.4);
+
+// ============================================
+// Transitions
+// ============================================
+$transition-fast: 100ms ease;
+$transition-normal: 200ms ease;
+$transition-slow: 300ms ease;
+
+// ============================================
+// Font
+// ============================================
+$font-family: "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
+$font-size-sm: 11px;
+$font-size-md: 13px;
+$font-size-lg: 15px;
+$font-size-xl: 18px;

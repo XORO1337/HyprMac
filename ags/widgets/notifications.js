@@ -2,6 +2,8 @@
 import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 import Notifications from 'resource:///com/github/Aylur/ags/service/notifications.js';
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
+import Theme from '../services/theme.js';
+import WallpaperColors from '../services/wallpaper-colors.js';
 
 // Individual Notification
 const Notification = (notification) => {
@@ -88,6 +90,15 @@ const Notification = (notification) => {
 const NotificationList = () => Widget.Box({
     vertical: true,
     className: 'notification-list',
+    setup: self => {
+        self.hook(Theme, () => {
+            self.toggleClassName('dark', Theme.isDark);
+            self.toggleClassName('light', !Theme.isDark);
+        });
+        self.hook(WallpaperColors, () => {
+            self.toggleClassName('dynamic-colors', WallpaperColors.dynamicEnabled);
+        });
+    },
     children: Notifications.bind('popups').as(popups => 
         popups.map(Notification)
     ),
