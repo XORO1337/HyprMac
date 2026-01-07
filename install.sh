@@ -352,9 +352,10 @@ else
     log_warning "SwayNC config directory not found"
 fi
 
-# Create wallpaper directory
+# Create wallpaper directories
 mkdir -p ~/Pictures/wallpaper
-log_success "Created wallpaper directory"
+mkdir -p ~/Pictures/wallpapers  # For wallpaper picker
+log_success "Created wallpaper directories"
 
 # ============================================
 # Summary
@@ -386,6 +387,7 @@ echo ""
 echo -e "${YELLOW}Key Bindings:${NC}"
 echo -e "  ${BLUE}Super + D${NC}     - Open Launcher (Spotlight)"
 echo -e "  ${BLUE}Super + C${NC}     - Toggle Control Center"
+echo -e "  ${BLUE}Super + W${NC}     - Wallpaper Picker"
 echo -e "  ${BLUE}Super + S${NC}     - Mission Control (hyprexpo)"
 echo -e "  ${BLUE}Super + L${NC}     - Lock Screen"
 echo -e "  ${BLUE}Super + Q${NC}     - Close Window"

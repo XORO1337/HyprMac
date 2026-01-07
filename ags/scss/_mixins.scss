@@ -48,6 +48,24 @@
 // Component Mixins
 // ============================================
 
+@mixin button-base {
+    all: unset;
+    cursor: pointer;
+    transition: all $transition-fast;
+}
+
+@mixin button-accent {
+    @include button-base;
+    background: $accent-color;
+    color: $crust;
+    border-radius: $border-radius-md;
+    font-weight: 500;
+    
+    &:hover {
+        background: $accent-hover;
+    }
+}
+
 @mixin button-reset {
     @include reset;
     padding: $spacing-sm;

@@ -40,6 +40,7 @@ class WallpaperColorService extends Service {
                 'background': ['string', 'r'],
                 'surface': ['string', 'r'],
                 'text': ['string', 'r'],
+                'dynamicEnabled': ['boolean', 'rw'],
             }
         );
     }
@@ -487,9 +488,11 @@ class WallpaperColorService extends Service {
     get dynamicEnabled() { return this.#dynamicEnabled; }
     
     set dynamicEnabled(value) {
+        if (this.#dynamicEnabled === value) return;
         this.#dynamicEnabled = value;
         // Toggle dynamic-colors class on all widgets
         this.emit('colors-changed');
+        this.notify('dynamicEnabled');
     }
 
     toggleDynamic() {

@@ -122,13 +122,15 @@
         border-radius: $border-radius-md;
     }
     
-    // Wallpaper grid - using FlowBox style
+    // Wallpaper grid container
     .wallpaper-grid {
         padding: $spacing-sm;
         min-width: 720px;
-        
-        // CSS Grid simulation with box wrapping
-        // AGS uses Gtk.Box, so we use homogeneous or manual sizing
+    }
+    
+    // Row of wallpaper items
+    .wallpaper-row {
+        margin-bottom: $spacing-xs;
     }
     
     // Individual wallpaper item

@@ -319,6 +319,7 @@ const WallpaperGrid = () => {
                 vexpand: true,
                 child: Widget.Box({
                     className: 'wallpaper-grid',
+                    css: 'min-width: 720px;',
                     setup: self => {
                         const updateGrid = () => {
                             const search = SearchQuery.value.toLowerCase();
@@ -335,13 +336,24 @@ const WallpaperGrid = () => {
                                 return true;
                             });
                             
-                            self.children = filtered.map(WallpaperItem);
+                            // Create rows of 4 items each for grid layout
+                            const rows = [];
+                            for (let i = 0; i < filtered.length; i += 4) {
+                                rows.push(Widget.Box({
+                                    className: 'wallpaper-row',
+                                    homogeneous: true,
+                                    children: filtered.slice(i, i + 4).map(WallpaperItem),
+                                }));
+                            }
+                            
+                            self.children = rows;
                         };
                         
                         self.hook(Wallpapers, updateGrid);
                         self.hook(SearchQuery, updateGrid);
                         self.hook(filterType, updateGrid);
                     },
+                    vertical: true,
                 }),
             }),
         ],
@@ -455,8 +467,12 @@ const ColorPreview = () => Widget.Box({
                 }),
                 Widget.Switch({
                     className: 'dynamic-colors-switch',
-                    active: WallpaperColors.bind('dynamicEnabled'),
-                    onActivate: ({ active }) => WallpaperColors.dynamicEnabled = active,
+                    setup: self => self.hook(WallpaperColors, () => {
+                        self.active = WallpaperColors.dynamicEnabled;
+                    }),
+                    onActivate: self => {
+                        WallpaperColors.dynamicEnabled = self.active;
+                    },
                 }),
             ],
         }),

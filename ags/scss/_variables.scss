@@ -43,13 +43,22 @@ $bg-active: alpha($blue, 0.3);
 
 $text-primary: $text;
 $text-secondary: $subtext0;
+$text-tertiary: $overlay1;
 $text-muted: $overlay1;
 
 $accent: $blue;
+$accent-color: $blue;
 $accent-hover: lighten($blue, 10%);
 $success: $green;
 $warning: $yellow;
 $error: $red;
+
+$border-color: alpha($text, 0.15);
+
+// Light theme semantic colors
+$text-primary-light: #1e1e2e;
+$text-secondary-light: #4c4f69;
+$text-tertiary-light: #6c6f85;
 
 // ============================================
 // Dimensions
@@ -62,6 +71,7 @@ $border-radius-sm: 4px;
 $border-radius-md: 8px;
 $border-radius-lg: 12px;
 $border-radius-xl: 16px;
+$border-radius-round: 50%;
 
 $spacing-xs: 4px;
 $spacing-sm: 8px;

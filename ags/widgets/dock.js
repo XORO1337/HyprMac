@@ -70,9 +70,11 @@ const DockItem = (app) => {
                 // Running indicator dot
                 Widget.Box({
                     className: 'dock-indicator',
-                    setup: self => self.hook(Hyprland, () => {
-                        self.toggleClassName('running', isRunning(appClass));
-                    }, 'client-added'),
+                    setup: self => {
+                        const update = () => self.toggleClassName('running', isRunning(appClass));
+                        self.hook(Hyprland, update, 'client-added');
+                        self.hook(Hyprland, update, 'client-removed');
+                    },
                 }),
             ],
         }),
